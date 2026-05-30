@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NTUN ARCHIVE</title>
+    <title>NTUN Certificate Vault</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script src="https://accounts.google.com/gsi/client" onload="initGoogleOAuth()" async defer></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Anuphan', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Inter', 'Anuphan', 'sans-serif'], }
                 }
             }
         }
@@ -58,7 +57,7 @@
             <h2 class="text-3xl font-bold tracking-tight text-gray-900 mb-2">เข้าสู่ระบบเกียรติบัตร</h2>
             <p class="text-gray-500 text-sm mb-8 leading-relaxed">เฉพาะบุคลากรและนักเรียนที่มีอีเมล <span class="font-semibold text-blue-600">@ntun.ac.th</span> หรือสิทธิ์แอดมินกลางที่ได้รับอนุญาต</p>
             
-            <div class="flex flex-col items-center justify-center">
+            <div class="flex flex-col items-center justify-center min-h-[50px]">
                 <div id="google-login-btn"></div>
             </div>
 
@@ -274,9 +273,9 @@
     </div>
 
     <script>
-        // --- ⚙️ตั้งค่าระบบ (อย่าลืมแก้ให้ตรงกับของคุณ) ---
-        const OAUTH_CLIENT_ID = '802485672001-9tfl4oh1cepma5480uu6533cb4op05pj.apps.googleusercontent.com'; // แก้ไขเป็นของตัวเอง
-        const TARGET_DRIVE_FOLDER_ID = '1m6Xkjr11pWoRriBgUFWHXGHIFUePaA6h'; // แก้ไขเป็น ID โฟลเดอร์ตัวเอง
+        // --- อัปเดต Client ID ใหม่เรียบร้อย ---
+        const OAUTH_CLIENT_ID = '802485672001-9tfl4oh1cepma5480uu6533cb4op05pj.apps.googleusercontent.com';
+        const TARGET_DRIVE_FOLDER_ID = '1m6Xkjr11pWoRriBgUFWHXGHIFUePaA6h';
 
         let currentUser = null;
         let googleAccessToken = null;
@@ -285,7 +284,6 @@
         let currentAdminTab = 'pending';
         let certificatesDatabaseCache = [];
 
-        // กำหนดให้เมลนี้เป็น Admin ถาวรตั้งแต่เริ่ม
         let superAdminsList = ['aceaa372@gmail.com']; 
         if(localStorage.getItem('ntun_vault_admins')) {
             try { superAdminsList = JSON.parse(localStorage.getItem('ntun_vault_admins')); } catch(e) {}
@@ -300,7 +298,7 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            initGoogleOAuth();
+            // เอาคำสั่งเรียกโหลดปุ่มออกไป ให้ไปเรียกตอน Script Google โหลดเสร็จแทน
             setTimeout(() => {
                 const loader = document.getElementById('loading-screen');
                 if (loader) {
@@ -310,8 +308,12 @@
             }, 800);
         });
 
+        // ฟังก์ชันนี้จะถูกเรียกอัตโนมัติเมื่อ Google Script โหลดเสร็จ 100%
         function initGoogleOAuth() {
-            if (typeof google === 'undefined') return;
+            if (typeof google === 'undefined') {
+                console.error("Google script not loaded properly.");
+                return;
+            }
             
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: OAUTH_CLIENT_ID,
@@ -324,6 +326,7 @@
                 callback: handleCredentialResponse
             });
 
+            // สร้างปุ่มตรงนี้
             google.accounts.id.renderButton(
                 document.getElementById("google-login-btn"),
                 { theme: "outline", size: "large", shape: "pill", width: 280 }
@@ -342,13 +345,11 @@
             }
         }
 
-        // --- ระบบคัดกรองเมลโรงเรียน & แอดมิน ---
         function verifyAndProcessUser(profile) {
             const email = profile.email.toLowerCase();
-            const isNtunDomain = email.endsWith('@ntun.ac.th'); // เช็คว่าใช่เมลโรงเรียนไหม
-            const isSuperAdmin = superAdminsList.includes(email); // เช็คว่าใช่คุณหรือแอดมินคนอื่นไหม
+            const isNtunDomain = email.endsWith('@ntun.ac.th'); 
+            const isSuperAdmin = superAdminsList.includes(email); 
 
-            // ถ้าไม่ใช่ทั้งเมลโรงเรียน และไม่ใช่แอดมิน เตือนแล้วหยุดเลย
             if (!isNtunDomain && !isSuperAdmin) {
                 alert('ขออภัย สิทธิ์การใช้งานระบบจำกัดไว้เฉพาะบัญชีกลุ่มโรงเรียน @ntun.ac.th เท่านั้นครับ');
                 return;
@@ -417,7 +418,7 @@
                         author: parts[2],
                         title: parts[3].replace(/\.[^/.]+$/, ""),
                         subCategory: file.description || 'ทั่วไป',
-                        imageUrl: file.webContentLink, // webContentLink เป็นลิงก์สำหรับดาวน์โหลดโดยตรง
+                        imageUrl: file.webContentLink,
                         thumbnailUrl: file.thumbnailLink || file.webContentLink,
                         createdTime: new Date(file.createdTime)
                     });

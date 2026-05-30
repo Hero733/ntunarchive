@@ -3,452 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NTUN Certificate Vault - คลังเกียรตินิยมดิจิทัล</title>
+    <title>NTUN Certificate Vault & Admin Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
-        :root {
-            --apple-bg: #f5f5f7;
-            --apple-card: rgba(255, 255, 255, 0.8);
-            --apple-shadow: 0 8px 30px rgb(0, 0, 0, 0.04);
-            --apple-shadow-hover: 0 20px 40px rgb(0, 0, 0, 0.08);
-        }
-        body {
-            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-            background-color: var(--apple-bg);
-            color: #1d1d1f;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        /* Glassmorphism Effect */
-        .glass {
-            background: var(--apple-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
-        /* Apple Smooth Shadow & Radius */
-        .apple-card {
-            border-radius: 18px;
-            box-shadow: var(--apple-shadow);
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .apple-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--apple-shadow-hover);
-        }
-
-        /* Custom Loading Screen */
-        #loader {
-            position: fixed;
-            inset: 0;
-            background: #ffffff;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #0071e3;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
-        }
-
-        /* macOS Dock Animation Custom Style */
-        .dock-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            animation: slideUpDock 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            animation-delay: 0.5s;
-            z-index: 50;
-        }
-        .dock-item {
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-            transform-origin: bottom;
-        }
-        .dock-item:hover {
-            transform: scale(1.3) translateY(-10px);
-            margin: 0 15px;
-        }
-
-        /* Stretchy Toggle Switch */
-        .stretchy-toggle input:checked ~ .dot {
-            transform: translateX(24px);
-            width: 28px;
-        }
-        .stretchy-toggle .dot {
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .stretchy-toggle active .dot {
-            width: 28px;
-        }
-
-        /* Keyframes */
+        :root { --apple-bg: #f5f5f7; --apple-card: rgba(255, 255, 255, 0.8); }
+        body { font-family: 'Inter', 'Noto Sans Thai', sans-serif; background-color: var(--apple-bg); color: #1d1d1f; -webkit-font-smoothing: antialiased; }
+        .glass { background: var(--apple-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4); }
+        .apple-card { border-radius: 18px; box-shadow: 0 8px 30px rgb(0,0,0,0.04); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .apple-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgb(0,0,0,0.08); }
+        #loader { position: fixed; inset: 0; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #0071e3; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes slideUpDock { to { transform: translateX(-50%) translateY(0); } }
-
-        /* Negative Space Modal */
-        .modal-blur {
-            background: rgba(245, 245, 247, 0.6);
-            backdrop-filter: blur(30px);
-        }
+        .modal-blur { background: rgba(245, 245, 247, 0.6); backdrop-filter: blur(30px); }
     </style>
 </head>
 <body class="min-h-screen pb-32">
 
-    <div id="loader">
-        <div class="spinner mb-4"></div>
-        <p class="text-sm font-medium text-gray-500 tracking-wide animate-pulse">กำลังเปิดคลังเกียรตินิยม NTUN...</p>
-    </div>
+    <div id="loader"><div class="spinner mb-4"></div><p class="text-sm font-medium text-gray-500 animate-pulse">กำลังเชื่อมต่อคลังเกียรตินิยม NTUN...</p></div>
 
     <nav class="sticky top-0 w-full z-40 glass border-b border-gray-200/50 px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('user')">
             <div class="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white font-bold text-sm">N</div>
             <span class="font-semibold text-lg tracking-tight">NTUN Vault</span>
         </div>
         
-        <div id="auth-section">
-            <div id="g_id_onload"
-                data-client_id="802485672001-7tuhmifm1ph2mb09hle6r6hf0tahu9gv.apps.googleusercontent.com"
-                data-callback="handleCredentialResponse"
-                data-auto_prompt="false">
+        <div class="flex items-center space-x-4">
+            <button id="adminBtn" onclick="switchView('admin')" class="hidden px-4 py-2 text-xs font-semibold text-purple-600 bg-purple-50 rounded-xl hover:bg-purple-100 transition-all">
+                ⚙️ คอนโซลแอดมิน
+            </button>
+            
+            <div id="auth-section">
+                <div id="g_id_onload" data-client_id="802485672001-7tuhmifm1ph2mb09hle6r6hf0tahu9gv.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-size="large"></div>
             </div>
-            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large"></div>
-        </div>
-        
-        <div id="user-profile" class="hidden flex items-center space-x-4">
-            <span id="user-name" class="text-sm font-medium text-gray-700"></span>
-            <img id="user-avatar" class="w-9 h-9 rounded-full border border-gray-200 shadow-sm" src="" alt="Avatar">
-            <button onclick="logout()" class="text-xs text-red-500 hover:underline">ออกจากระบบ</button>
+            
+            <div id="user-profile" class="hidden flex items-center space-x-3">
+                <img id="user-avatar" class="w-8 h-8 rounded-full border border-gray-200" src="" alt="Avatar">
+                <button onclick="logout()" class="text-xs text-red-500 hover:underline">ออก</button>
+            </div>
         </div>
     </nav>
 
-    <header class="max-w-6xl mx-auto px-6 pt-16 pb-12 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-6">
-        <div>
-            <p class="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-2">มรดกแห่งความสำเร็จ</p>
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 leading-tight">
-                ที่เก็บเกียรติบัตรดิจิทัล<br><span class="text-gray-400">สำหรับโรงเรียนของเราทุกคน.</span>
-            </h1>
-        </div>
-        <div class="glass apple-card p-6 flex space-x-8 text-left w-full md:w-auto">
+    <div id="userView" class="max-w-6xl mx-auto px-6 pt-12">
+        <header class="mb-12">
+            <p class="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-2">ตรวจสอบแล้วโดยโรงเรียน</p>
+            <h1 class="text-4xl font-bold tracking-tight text-gray-900">คลังเกียรติบัตรฉบับเป็นทางการ</h1>
+            <p class="text-gray-400 mt-2">เฉพาะข้อมูลที่ผ่านการอนุมัติจากผู้บริหารแล้วเท่านั้นที่ปรากฏที่นี่</p>
+        </header>
+
+        <section class="glass apple-card p-4 mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
+            <input type="text" id="searchInput" oninput="renderUserCertificates()" placeholder="🔍 ค้นหาชื่อนักเรียน หรือรายการแข่งขัน..." class="w-full md:w-80 px-4 py-2 bg-gray-100 rounded-xl text-sm focus:outline-none">
+            <div class="flex space-x-2">
+                <button onclick="filterCategory('all')" class="px-4 py-2 text-xs bg-black text-white rounded-lg">ทั้งหมด</button>
+                <button onclick="filterCategory('วิทยาศาสตร์')" class="px-4 py-2 text-xs bg-white border border-gray-200 rounded-lg">วิทยาศาสตร์</button>
+                <button onclick="filterCategory('คณิตศาสตร์')" class="px-4 py-2 text-xs bg-white border border-gray-200 rounded-lg">คณิตศาสตร์</button>
+                <button onclick="filterCategory('ภาษา')" class="px-4 py-2 text-xs bg-white border border-gray-200 rounded-lg">ภาษา</button>
+            </div>
+        </section>
+
+        <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="userGrid"></main>
+    </div>
+
+    <div id="adminView" class="max-w-6xl mx-auto px-6 pt-12 hidden">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <span class="block text-3xl font-bold text-gray-900">142</span>
-                <span class="text-xs text-gray-500 font-medium">ใบรับรองทั้งหมด</span>
+                <h1 class="text-3xl font-bold tracking-tight text-purple-900">ระบบจัดการสำหรับผู้ดูแลระบบ</h1>
+                <p class="text-sm text-gray-500">จัดการสิทธิ์แอดมิน อนุมัติ หรือลบเกียรติบัตรที่ผิดกฎ</p>
             </div>
-            <div class="border-l border-gray-200 pl-8">
-                <span class="block text-3xl font-bold text-green-600">Verified</span>
-                <span class="text-xs text-gray-500 font-medium">ผ่านการตรวจไอที</span>
-            </div>
+            <button onclick="openAdminManager()" class="px-4 py-2 text-xs font-medium bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all">👥 จัดการรายชื่อแอดมิน</button>
+        </header>
+
+        <div class="flex border-b border-gray-200 mb-8 space-x-8">
+            <button onclick="switchAdminTab('pending')" id="tab-pending" class="pb-4 text-sm font-semibold border-b-2 border-purple-600 text-purple-600">📥 ยังไม่ได้ตรวจ (<span id="count-pending">0</span>)</button>
+            <button onclick="switchAdminTab('approved')" id="tab-approved" class="pb-4 text-sm font-medium text-gray-400 border-b-2 border-transparent">✅ ผ่านแล้ว (<span id="count-approved">0</span>)</button>
+            <button onclick="switchAdminTab('rejected')" id="tab-rejected" class="pb-4 text-sm font-medium text-gray-400 border-b-2 border-transparent">❌ ไม่ผ่าน (<span id="count-rejected">0</span>)</button>
         </div>
-    </header>
 
-    <section class="max-w-6xl mx-auto px-6 mb-8">
-        <div class="glass apple-card p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div class="relative w-full md:w-80">
-                <input type="text" id="searchInput" oninput="filterCertificates()" placeholder="ค้นหาชื่อผู้เข้าแข่งขัน หรือ รายการ..." 
-                       class="w-full pl-10 pr-4 py-2.5 bg-gray-100/80 border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="adminGrid"></div>
+    </div>
 
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto overflow-x-auto">
-                <button onclick="filterCategory('all')" class="px-4 py-2 text-xs font-medium rounded-lg bg-gray-900 text-white shadow-sm transition-all">ทั้งหมด</button>
-                <div class="h-4 w-[1px] bg-gray-300 mx-1"></div> <button onclick="filterCategory('วิทยาศาสตร์')" class="px-4 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all">วิทยาศาสตร์</button>
-                <button onclick="filterCategory('คณิตศาสตร์')" class="px-4 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all">คณิตศาสตร์</button>
-                <button onclick="filterCategory('ภาษา')" class="px-4 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all">ภาษา</button>
-                <div class="h-4 w-[1px] bg-gray-300 mx-1"></div> <div class="flex items-center space-x-2 bg-gray-100 p-1 rounded-xl">
-                    <span class="text-xs text-gray-500 px-2">เรียงตามวันที่</span>
-                    <label class="stretchy-toggle relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="sortToggle" onchange="toggleSorting()" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <main class="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="certificateGrid">
-        </main>
-
-    <div id="uploadModal" class="fixed inset-0 z-50 modal-blur hidden opacity-0 transition-all duration-500 flex items-center justify-center p-4">
-        <div class="bg-white/90 backdrop-blur-md rounded-3xl w-full max-w-lg p-8 shadow-2xl border border-white/20 transform scale-95 transition-all duration-500" id="modalCard">
+    <div id="uploadModal" class="fixed inset-0 z-50 modal-blur hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl border border-white/20">
             <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900">ส่งเกียรติบัตรเข้าคลัง</h2>
-                    <p class="text-xs text-gray-500 mt-1">ระบบจะตรวจสอบชื่อผู้ชนะและเนื้อหาอัตโนมัติด้วยระบบ AI</p>
-                </div>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-all">&times;</button>
+                <h2 class="text-xl font-bold text-gray-900">ส่งข้อมูลเกียรติบัตร</h2>
+                <button onclick="toggleModal('uploadModal', false)" class="text-gray-400 text-2xl">&times;</button>
             </div>
-
-            <form id="uploadForm" onsubmit="handleUploadSubmit(event)" class="space-y-4">
+            <form onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">ชื่อผู้เข้าแข่งขัน/ผู้ได้รับ</label>
-                    <input type="text" id="participantName" required placeholder="เช่น นายคูณทรัพย์ เพชรวิชิต" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">ชื่อผู้ได้รับเกียรติบัตร</label>
+                    <input type="text" id="pName" required placeholder="เช่น นายคูณทรัพย์ เพชรวิชิต" class="w-full px-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500">
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">หมวดหมู่หลัก</label>
-                        <select id="mainCategory" onchange="updateSubCategories()" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-500 mb-2">หมวดหลัก</label>
+                        <select id="mCat" class="w-full px-4 py-2.5 bg-gray-50 border rounded-xl text-sm">
                             <option value="วิทยาศาสตร์">วิทยาศาสตร์</option>
                             <option value="คณิตศาสตร์">คณิตศาสตร์</option>
                             <option value="ภาษา">ภาษา</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">รายการเสริม / สาขา</label>
-                        <select id="subCategory" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            </select>
+                        <label class="block text-xs font-semibold text-gray-500 mb-2">สาขาย่อย</label>
+                        <input type="text" id="sCat" required placeholder="เช่น ฟิสิกส์ / เคมี" class="w-full px-4 py-2.5 bg-gray-50 border rounded-xl text-sm">
                     </div>
                 </div>
-
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">ไฟล์รูปเกียรติบัตร (.png, .jpg)</label>
-                    <div class="border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-2xl p-6 text-center cursor-pointer transition-all bg-gray-50/50" onclick="document.getElementById('fileInput').click()">
-                        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewFile()">
-                        <div id="uploadPreview" class="text-sm text-gray-400">
-                            <svg class="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกรูปภาพ
-                        </div>
-                    </div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">รายละเอียดการแข่งขัน / รางวัลที่ได้รับ</label>
+                    <textarea id="pDetail" required placeholder="เช่น ได้รับรางวัลเหรียญทอง การแข่งขันตอบปัญหาวิทยาศาสตร์ระดับภาค" class="w-full px-4 py-2.5 bg-gray-50 border rounded-xl text-sm h-20 focus:ring-2 focus:ring-blue-500"></textarea>
                 </div>
-
-                <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm transition-all shadow-md hover:shadow-lg transform active:scale-95">
-                    อัปโหลดและส่งให้ AI ตรวจสอบ
-                </button>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">รูปภาพเกียรติบัตรจริง</label>
+                    <input type="file" id="fileInp" accept="image/*" required class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700">
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 text-white font-medium text-sm rounded-xl hover:bg-blue-700 transition-all">ส่งให้แอดมินและระบบตรวจสอบ</button>
             </form>
         </div>
     </div>
 
-    <div class="dock-container">
-        <div class="glass px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-4 border border-white/40">
-            <button onclick="openModal()" class="dock-item w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg relative group">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                <span class="absolute -top-10 scale-0 group-hover:scale-100 bg-black text-white text-xs px-2 py-1 rounded transition-all whitespace-nowrap">อัปโหลดเกียรติบัตร</span>
-            </button>
-            <div class="h-8 w-[1px] bg-gray-300"></div>
-            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="dock-item w-12 h-12 rounded-xl bg-white text-gray-700 flex items-center justify-center shadow border border-gray-100 group relative">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7 7 7M5 19l7-7 7 7"></path></svg>
-                <span class="absolute -top-10 scale-0 group-hover:scale-100 bg-black text-white text-xs px-2 py-1 rounded transition-all whitespace-nowrap">กลับขึ้นบน</span>
-            </button>
+    <div id="adminModal" class="fixed inset-0 z-50 modal-blur hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-base font-bold text-gray-900">👥 รายชื่อผู้สิทธิ์ผู้ดูแลระบบ (Admin)</h2>
+                <button onclick="toggleModal('adminModal', false)" class="text-gray-400 text-2xl">&times;</button>
+            </div>
+            <div class="space-y-3 mb-4 max-h-40 overflow-y-auto" id="adminListContainer"></div>
+            <div class="flex gap-2">
+                <input type="email" id="newAdminEmail" placeholder="ใส่อีเมลแอดมินคนใหม่..." class="flex-1 px-3 py-2 bg-gray-50 border rounded-xl text-xs focus:outline-none">
+                <button onclick="addNewAdmin()" class="px-4 py-2 bg-purple-600 text-white text-xs font-medium rounded-xl hover:bg-purple-700">เพิ่มสิทธิ์</button>
+            </div>
         </div>
     </div>
 
+    <div class="fixed bottom-6 left-50 fixed left-1/2 -translate-x-1/2 z-50">
+        <button onclick="toggleModal('uploadModal', true)" class="px-6 py-3.5 bg-blue-600 text-white rounded-full font-medium text-sm shadow-xl hover:scale-105 transition-all flex items-center space-x-2">
+            <span>➕ อัปโหลดเกียรติบัตรใหม่</span>
+        </button>
+    </div>
+
     <script>
-        // ข้อมูลจำลองพนักงาน/นักเรียนสำหรับการเปิดดูตอนแรก (Mock Data) สไตล์วิดีโอ YouTube (เก่า-ใหม่)
-        let mockCertificates = [
-            { id: 1, name: "นายคูณทรัพย์ เพชรวิชิต", mainCat: "วิทยาศาสตร์", subCat: "ฟิสิกส์", image: "https://images.unsplash.com/photo-1589330694653-ded6df03f754?q=80&w=600&auto=format&fit=crop", date: new Date("2026-05-28") },
-            { id: 2, name: "นางสาวศิริพร ใจดี", mainCat: "คณิตศาสตร์", subCat: "คณิตศาสตร์โอลิมปิก", image: "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=600&auto=format&fit=crop", date: new Date("2026-04-12") },
-            { id: 3, name: "นายผอ. โรงเรียนคนเก่ง", mainCat: "ภาษา", subCat: "ภาษาอังกฤษ", image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=600&auto=format&fit=crop", date: new Date("2026-05-30") }
+        // กำหนด URL ของ Cloudflare Worker ออนไลน์ของคุณที่นี่หลังสร้างเสร็จ
+        const WORKER_URL = "https://ชื่อเว็บบอร์ดของคุณ.workers.dev"; 
+
+        // รายการผู้มีสิทธิ์แอดมินเริ่มต้น
+        let adminList = ["aceaa372@gmail.com"];
+        let currentUserIdToken = null;
+        let currentUserEmail = "";
+        let adminTab = "pending";
+
+        // โครงสร้างข้อมูลจำลองการบันทึก (เวลาเชื่อมต่อจริงข้อมูลทั้งหมดจะถูกดึงมาจาก Cloudflare)
+        let dbCertificates = [
+            { id: "1", name: "นายคูณทรัพย์ เพชรวิชิต", mainCat: "วิทยาศาสตร์", subCat: "ฟิสิกส์", detail: "รางวัลชนะเลิศอันดับ 1 ตอบปัญหาวิทยาศาสตร์", status: "pending", image: "https://images.unsplash.com/photo-1589330694653-ded6df03f754?w=400" },
+            { id: "2", name: "นางสาวศิริพร ใจดี", mainCat: "คณิตศาสตร์", subCat: "คณิตศาสตร์ประยุกต์", detail: "เหรียญเงินระดับประเทศ คิดเลขเร็ว", status: "approved", image: "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400" }
         ];
 
-        let currentFilter = 'all';
-        let currentSort = 'newest'; // newest หรือ oldest
-
-        // จัดการซับแคททิจอรี่ให้เปลี่ยนตามหมวดหลัก
-        const subCategoriesMap = {
-            "วิทยาศาสตร์": ["ฟิสิกส์", "เคมี", "ชีววิทยา", "ดาราศาสตร์"],
-            "คณิตศาสตร์": ["คณิตศาสตร์หลัก", "สถิติ", "คณิตศาสตร์ประยุกต์"],
-            "ภาษา": ["ภาษาไทย", "ภาษาอังกฤษ", "ภาษาจีน", "ภาษาญี่ปุ่น"]
-        };
-
-        // เมื่อหน้าเว็บโหลดเสร็จสิ้น (ซ่อน Loading Screen)
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 600);
-            }, 1000); // จำลองเวลาการโหลดเน็ตช้า
-
-            updateSubCategories();
-            renderCertificates();
+            setTimeout(() => { document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').style.display = 'none', 500); }, 800);
+            renderUserCertificates();
+            renderAdminCertificates();
         });
 
-        // ฟังก์ชันอัปเดตตัวเลือกย่อยตามวิชาหลัก
-        function updateSubCategories() {
-            const main = document.getElementById('mainCategory').value;
-            const subSelect = document.getElementById('subCategory');
-            subSelect.innerHTML = "";
-            subCategoriesMap[main].forEach(sub => {
-                let opt = document.createElement('option');
-                opt.value = sub;
-                opt.innerText = sub;
-                subSelect.appendChild(opt);
-            });
-        }
-
-        // จัดการ Google Login
         function handleCredentialResponse(response) {
-            // ถอดรหัส JWT Token จาก Google Sign-In
-            const responsePayload = parseJwt(response.credential);
-            
-            // ตรวจสอบความปลอดภัยอีเมลโรงเรียนโดเมน @ntun.ac.th เท่านั้น
-            if (!responsePayload.email.endsWith("@ntun.ac.th")) {
-                alert("สิทธิ์การเข้าใช้งานถูกปฏิเสธ! กรุณาใช้ Email โรงเรียน (@ntun.ac.th) เท่านั้น!");
+            currentUserIdToken = response.credential;
+            const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            currentUserEmail = payload.email;
+
+            // กรองความปลอดภัยสิทธิ์เข้าใช้งานตามเงื่อนไขคุณ
+            const isNtunEmail = currentUserEmail.endsWith("@ntun.ac.th");
+            const isAdminEmail = adminList.includes(currentUserEmail);
+
+            if (!isNtunEmail && !isAdminEmail) {
+                alert("ปฏิเสธการเข้าใช้! คุณต้องใช้ Email โรงเรียน @ntun.ac.th หรือบัญชีแอดมินที่กำหนดไว้เท่านั้น");
                 logout();
                 return;
             }
 
-            // แสดงหน้าโปรไฟล์หลังล็อกอินสำเร็จ
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('user-profile').classList.remove('hidden');
-            document.getElementById('user-name').innerText = responsePayload.name;
-            document.getElementById('user-avatar').src = responsePayload.picture;
-        }
+            document.getElementById('user-avatar').src = payload.picture;
 
-        function parseJwt(token) {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
-
-        function logout() {
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('user-profile').classList.add('hidden');
-            location.reload();
-        }
-
-        // เปิด-ปิด โมดอลด้วยลอจิก Negative Space (แอนิเมชั่นนุ่มนวล)
-        function openModal() {
-            const modal = document.getElementById('uploadModal');
-            const card = document.getElementById('modalCard');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.style.opacity = '1';
-                card.style.transform = 'scale(1) translateY(0)';
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('uploadModal');
-            const card = document.getElementById('modalCard');
-            modal.style.opacity = '0';
-            card.style.transform = 'scale(0.95) translateY(20px)';
-            setTimeout(() => modal.classList.add('hidden'), 500);
-        }
-
-        // แสดงผลพรีวิวไฟล์เกียรติบัตร
-        function previewFile() {
-            const file = document.getElementById('fileInput').files[0];
-            if(file) {
-                document.getElementById('uploadPreview').innerText = `เลือกไฟล์สำเร็จ: ${file.name}`;
+            if (isAdminEmail) {
+                document.getElementById('adminBtn').classList.remove('hidden');
+                alert("ยินดีต้อนรับผู้ดูแลระบบ เข้าสู่ระบบสำเร็จ");
             }
         }
 
-        // คัดกรองข้อมูลสไตล์ YouTube การจัดหมวด
-        function filterCategory(cat) {
-            currentFilter = cat;
-            renderCertificates();
+        function logout() { location.reload(); }
+        function toggleModal(id, show) { document.getElementById(id).classList.toggle('hidden', !show); if(id==='adminModal' && show) renderAdminList(); }
+        function switchView(view) {
+            document.getElementById('userView').classList.toggle('hidden', view !== 'user');
+            document.getElementById('adminView').classList.toggle('hidden', view !== 'admin');
+        }
+        function switchAdminTab(tab) {
+            adminTab = tab;
+            ['pending', 'approved', 'rejected'].forEach(t => {
+                document.getElementById(`tab-${t}`).className = t === tab ? "pb-4 text-sm font-semibold border-b-2 border-purple-600 text-purple-600" : "pb-4 text-sm font-medium text-gray-400 border-b-2 border-transparent";
+            });
+            renderAdminCertificates();
         }
 
-        function toggleSorting() {
-            const toggle = document.getElementById('sortToggle');
-            currentSort = toggle.checked ? 'oldest' : 'newest';
-            renderCertificates();
+        // แสดงเกียรติบัตรที่ผ่านการอนุมัติแล้วเท่านั้นให้คนทั่วไปเห็น
+        function renderUserCertificates() {
+            const grid = document.getElementById('userGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            grid.innerHTML = "";
+            
+            const approvedList = dbCertificates.filter(c => c.status === 'approved' && (c.name.toLowerCase().includes(search) || c.detail.toLowerCase().includes(search)));
+            
+            if(approvedList.length === 0) { grid.innerHTML = `<p class="text-gray-400 text-sm py-8 col-span-full text-center">ยังไม่มีข้อมูลเกียรติบัตรที่ได้รับยืนยันในส่วนนี้</p>`; return; }
+            
+            approvedList.forEach(c => {
+                grid.innerHTML += `
+                    <div class="glass apple-card overflow-hidden bg-white flex flex-col justify-between">
+                        <img src="${c.image}" class="w-full h-48 object-cover">
+                        <div class="p-5">
+                            <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-bold uppercase">${c.mainCat} • ${c.subCat}</span>
+                            <h3 class="font-bold text-gray-900 mt-2">${c.name}</h3>
+                            <p class="text-xs text-gray-500 mt-1">${c.detail}</p>
+                            <div class="mt-4 pt-3 border-t flex justify-end">
+                                <a href="${c.image}" target="_blank" class="text-xs font-semibold text-blue-600 hover:underline">🔎 เปิดดูใบจริง</a>
+                            </div>
+                        </div>
+                    </div>`;
+            });
         }
 
-        function filterCertificates() {
-            renderCertificates();
-        }
-
-        // ฟังก์ชันวาดการ์ดเกียรติบัตรลงหน้าจอ
-        function renderCertificates() {
-            const grid = document.getElementById('certificateGrid');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+        // แสดงหน้าควบคุมการจัดการอนุมัติ/ลบ ของแอดมิน
+        function renderAdminCertificates() {
+            const grid = document.getElementById('adminGrid');
             grid.innerHTML = "";
 
-            let filtered = mockCertificates.filter(item => {
-                const matchCat = (currentFilter === 'all' || item.mainCat === currentFilter);
-                const matchSearch = item.name.toLowerCase().includes(searchVal) || item.subCat.toLowerCase().includes(searchVal);
-                return matchCat && matchSearch;
-            });
+            const pending = dbCertificates.filter(c => c.status === 'pending');
+            const approved = dbCertificates.filter(c => c.status === 'approved');
+            const rejected = dbCertificates.filter(c => c.status === 'rejected');
 
-            // จัดเรียงข้อมูลเก่าใหม่แบบ YouTube
-            if (currentSort === 'newest') {
-                filtered.sort((a, b) => b.date - a.date);
-            } else {
-                filtered.sort((a, b) => a.date - b.date);
-            }
+            document.getElementById('count-pending').innerText = pending.length;
+            document.getElementById('count-approved').innerText = approved.length;
+            document.getElementById('count-rejected').innerText = rejected.length;
 
-            if(filtered.length === 0) {
-                grid.innerHTML = `<p class="col-span-full text-center text-sm text-gray-400 py-12">ไม่พบข้อมูลเกียรติบัตรในหมวดหมู่นี้</p>`;
-                return;
-            }
+            const currentList = dbCertificates.filter(c => c.status === adminTab);
 
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "glass apple-card overflow-hidden flex flex-col justify-between";
-                card.innerHTML = `
-                    <div class="relative group overflow-hidden bg-gray-100 aspect-[4/3]">
-                        <img src="${item.image}" alt="Certificate" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full text-gray-800 shadow-sm">${item.mainCat} : ${item.subCat}</span>
-                    </div>
-                    <div class="p-5 bg-white">
-                        <h3 class="font-semibold text-gray-900 text-base mb-1 truncate">${item.name}</h3>
-                        <p class="text-xs text-gray-400 mb-4">อัปโหลดเมื่อ: ${item.date.toLocaleDateString('th-TH')}</p>
-                        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                            <span class="inline-flex items-center text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a.75.75 0 00-.75-.75h-.007a.75.75 0 00-.75.75v.006a.75.75 0 00.75.75h.007a.75.75 0 00.75-.75v-.006zm-.75 2.5a.75.75 0 01.75.75v5.5a.75.75 0 01-1.5 0v-5.5a.75.75 0 01.75-.75zm10.56-2.515a.75.75 0 01.03 1.06l-6.25 6.5a.75.75 0 01-1.09 0l-3.25-3.38a.75.75 0 111.09-1.03l2.71 2.81 5.71-5.94a.75.75 0 011.06-.01z" clip-rule="evenodd"></path></svg>
-                                ยืนยันแล้ว
-                            </span>
-                            <a href="${item.image}" download="เกียรติบัตร_${item.name}.jpg" class="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center transition-all">
-                                ดาวน์โหลดรูปภาพ
-                                <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1M12 4v12m0 0l3-3m-3 3l-3-3"></path></svg>
-                            </a>
+            if(currentList.length === 0) { grid.innerHTML = `<p class="text-gray-400 text-sm py-8 col-span-full">ไม่มีรายการในหมวดหมู่นี้</p>`; return; }
+
+            currentList.forEach(c => {
+                grid.innerHTML += `
+                    <div class="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex gap-4">
+                        <img src="${c.image}" class="w-24 h-24 rounded-xl object-cover bg-gray-100">
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900">${c.name}</h4>
+                                <p class="text-xs text-purple-600 font-medium">${c.mainCat} (${c.subCat})</p>
+                                <p class="text-xs text-gray-400 line-clamp-2 mt-1">${c.detail}</p>
+                            </div>
+                            <div class="flex space-x-2 mt-2">
+                                ${c.status === 'pending' ? `
+                                    <button onclick="updateStatus('${c.id}', 'approved')" class="px-3 py-1 bg-green-600 text-white text-[10px] font-medium rounded-lg">อนุมัติ</button>
+                                    <button onclick="updateStatus('${c.id}', 'rejected')" class="px-3 py-1 bg-amber-500 text-white text-[10px] font-medium rounded-lg">ปฏิเสธ</button>
+                                ` : ''}
+                                <button onclick="deleteCertificate('${c.id}')" class="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-medium rounded-lg hover:bg-red-100">🗑️ ลบถาวร</button>
+                            </div>
                         </div>
-                    </div>
-                `;
-                grid.appendChild(card);
+                    </div>`;
             });
         }
 
-        // จัดการเมื่อกดปุ่ม Submit เพื่ออัปโหลด (จุดที่นำไปต่อยอดกับ Cloudflare และ AI Gateway ของคุณ)
-        function handleUploadSubmit(event) {
+        function updateStatus(id, newStatus) {
+            const item = dbCertificates.find(c => c.id === id);
+            if(item) { item.status = newStatus; renderUserCertificates(); renderAdminCertificates(); }
+        }
+
+        function deleteCertificate(id) {
+            if(confirm("คุณแน่ใจใช่ไหมว่าจะลบเกียรติบัตรใบนี้ออกจากคลังระบบอย่างถาวร?")) {
+                dbCertificates = dbCertificates.filter(c => c.id !== id);
+                renderUserCertificates(); renderAdminCertificates();
+            }
+        }
+
+        function renderAdminList() {
+            const container = document.getElementById('adminListContainer'); container.innerHTML = "";
+            adminList.forEach(email => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-xl text-xs">
+                        <span class="text-gray-700">${email}</span>
+                        ${email !== 'aceaa372@gmail.com' ? `<button onclick="removeAdmin('${email}')" class="text-red-500 font-medium hover:underline">ลบออก</button>` : '<span class="text-gray-400 text-[10px]">ผู้ก่อตั้ง</span>'}
+                    </div>`;
+            });
+        }
+
+        function addNewAdmin() {
+            const email = document.getElementById('newAdminEmail').value.trim();
+            if(email && !adminList.includes(email)) { adminList.push(email); document.getElementById('newAdminEmail').value = ""; renderAdminList(); alert("เพิ่มแอดมินใหม่สำเร็จ!"); }
+        }
+
+        function removeAdmin(email) { adminList = adminList.filter(e => e !== email); renderAdminList(); }
+
+        // ดักฟังก์ชันตอนส่งข้อมูลอัปโหลด (ยิงส่งไปยังระบบเก็บไฟล์ออนไลน์หลังบ้าน)
+        async function handleFormSubmit(event) {
             event.preventDefault();
             
-            const name = document.getElementById('participantName').value;
-            const mainCat = document.getElementById('mainCategory').value;
-            const subCat = document.getElementById('subCategory').value;
-            const fileInput = document.getElementById('fileInput');
+            const fileField = document.getElementById('fileInp').files[0];
+            const formData = new FormData();
+            formData.append('name', document.getElementById('pName').value);
+            formData.append('mainCat', document.getElementById('mCat').value);
+            formData.append('subCat', document.getElementById('sCat').value);
+            formData.append('detail', document.getElementById('pDetail').value);
+            formData.append('file', fileField);
 
-            if (!fileInput.files[0]) {
-                alert("กรุณาเลือกไฟล์ภาพเกียรติบัตรก่อนครับ!");
-                return;
+            alert("กำลังส่งคำขอเข้าสู่คลังเกียรติบัตร ข้อมูลของคุณจะเข้าสู่กล่องข้อความ 'รอตรวจสอบ' ของแอดมิน เพื่อความเรียบร้อยและป้องกันรูปที่ไม่เหมาะสม!");
+            
+            // ส่งขึ้นไปบนคลาวด์ออนไลน์จริงผ่าน Cloudflare Worker API ยึดตามขั้นตอนถัดไป
+            try {
+                const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
+                const json = await res.json();
+                if(json.success) { alert("อัปโหลดออนไลน์เข้าคิวแอดมินและแยกโฟลเดอร์เรียบร้อยครับ!"); location.reload(); }
+            } catch(e) {
+                // จำลองระบบกรณีรันภายในเครื่องแอป Koder แบบออฟไลน์ก่อนตั้งเซิร์ฟเวอร์
+                console.log("Offline Fallback Simulation triggered.");
+                dbCertificates.unshift({ id: Date.now().toString(), name: document.getElementById('pName').value, mainCat: document.getElementById('mCat').value, subCat: document.getElementById('sCat').value, detail: document.getElementById('pDetail').value, status: "pending", image: URL.createObjectURL(fileField) });
+                renderAdminCertificates(); toggleModal('uploadModal', false); document.getElementById('uploadModal').getElementsByTagName('form')[0].reset();
             }
-
-            // --- คำอธิบายสถาปัตยกรรมและแผนการพัฒนาหลังบ้าน (Backend Cloudflare) ---
-            alert("กำลังจำลองระบบการส่งตรวจ AI และอัปโหลดไปยัง Google Drive...\n\n(ระบบ AI กำลังตรวจ: 1. ความสุภาพของข้อความ 2. ลบล้างรูปภาพไม่เหมาะสม 3. ดึงชื่อในใบประกาศเช็คความถูกต้องกับชื่อที่กรอก)");
-
-            // สร้าง Mock อัปเดตขึ้น UI ทันทีแบบเรียลไทม์
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                mockCertificates.unshift({
-                    id: Date.now(),
-                    name: name,
-                    mainCat: mainCat,
-                    subCat: subCat,
-                    image: e.target.result,
-                    date: new Date()
-                });
-                renderCertificates();
-                closeModal();
-                document.getElementById('uploadForm').reset();
-                document.getElementById('uploadPreview').innerHTML = `ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกรูปภาพ`;
-            };
-            reader.readAsDataURL(fileInput.files[0]);
         }
     </script>
 </body>

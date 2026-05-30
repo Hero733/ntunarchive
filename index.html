@@ -285,7 +285,8 @@
         let currentAdminTab = 'pending';
         let certificatesDatabaseCache = [];
 
-        let superAdminsList = ['aceaa372@gmail.com'];
+        // กำหนดให้เมลนี้เป็น Admin ถาวรตั้งแต่เริ่ม
+        let superAdminsList = ['aceaa372@gmail.com']; 
         if(localStorage.getItem('ntun_vault_admins')) {
             try { superAdminsList = JSON.parse(localStorage.getItem('ntun_vault_admins')); } catch(e) {}
         }
@@ -341,11 +342,13 @@
             }
         }
 
+        // --- ระบบคัดกรองเมลโรงเรียน & แอดมิน ---
         function verifyAndProcessUser(profile) {
             const email = profile.email.toLowerCase();
-            const isNtunDomain = email.endsWith('@ntun.ac.th');
-            const isSuperAdmin = superAdminsList.includes(email);
+            const isNtunDomain = email.endsWith('@ntun.ac.th'); // เช็คว่าใช่เมลโรงเรียนไหม
+            const isSuperAdmin = superAdminsList.includes(email); // เช็คว่าใช่คุณหรือแอดมินคนอื่นไหม
 
+            // ถ้าไม่ใช่ทั้งเมลโรงเรียน และไม่ใช่แอดมิน เตือนแล้วหยุดเลย
             if (!isNtunDomain && !isSuperAdmin) {
                 alert('ขออภัย สิทธิ์การใช้งานระบบจำกัดไว้เฉพาะบัญชีกลุ่มโรงเรียน @ntun.ac.th เท่านั้นครับ');
                 return;
@@ -619,7 +622,6 @@
             document.getElementById('modal-author').innerText = item.author;
             document.getElementById('modal-tag').innerText = item.category;
             document.getElementById('modal-sub').innerText = item.subCategory;
-            // เซ็ตลิงก์สำหรับดาวน์โหลด
             document.getElementById('modal-download-link').href = item.imageUrl;
 
             modal.classList.remove('hidden');

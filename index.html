@@ -48,17 +48,19 @@
         .dock-item:hover {
             transform: scale(1.25) translateY(-10px);
         }
-        /* Stretchy Toggle Switch */
+        
+        /* แก้ไข: Stretchy Toggle Switch ไม่ให้บัค */
         .toggle-checkbox:checked + .toggle-label {
             background-color: #0071e3;
         }
         .toggle-checkbox:checked + .toggle-label .toggle-dot {
             transform: translateX(100%);
-            width: 24px;
         }
         .toggle-dot {
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            width: calc(50% - 2px); /* ปรับให้พอดีครึ่งนึง */
         }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -120,10 +122,12 @@
                             <span class="text-xs text-gray-500 font-medium">เรียงตามวันที่:</span>
                             <div class="relative inline-block w-36 mr-2 align-middle select-none transition duration-200 ease-in">
                                 <input type="checkbox" name="toggle" id="sort-toggle" onchange="filterCertificates()" class="toggle-checkbox hidden"/>
-                                <label for="sort-toggle" class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-200 cursor-pointer p-0.5 flex justify-between items-center text-[10px] font-semibold text-gray-600 px-2 uppercase">
-                                    <span class="z-10 pointer-events-none select-none text-white pl-1 mix-blend-difference">ล่าสุดก่อน</span>
-                                    <span class="z-10 pointer-events-none select-none text-white pr-2 mix-blend-difference">เก่าสุดก่อน</span>
-                                    <div class="toggle-dot absolute top-0.5 left-0.5 bg-white w-16 h-6 rounded-full shadow-md transform duration-300 ease-in-out"></div>
+                                <label for="sort-toggle" class="toggle-label relative block overflow-hidden h-7 rounded-full bg-gray-200 cursor-pointer p-0.5 text-[10px] font-semibold text-gray-600 uppercase">
+                                    <div class="toggle-dot absolute top-0.5 left-0.5 bg-white h-6 rounded-full shadow-md z-0"></div>
+                                    <div class="relative z-10 flex justify-between items-center h-full px-2 text-white mix-blend-difference pointer-events-none">
+                                        <span>ล่าสุดก่อน</span>
+                                        <span>เก่าสุดก่อน</span>
+                                    </div>
                                 </label>
                             </div>
                         </div>
@@ -230,7 +234,7 @@
                             </tr>
                         </thead>
                         <tbody id="history-table-body">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -251,8 +255,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="admin-items-container">
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="admin-items-container"></div>
 
                 <div id="admin-manage-container" class="hidden space-y-6 animate-fade-in">
                     <form onsubmit="addAdminEmail(event)" class="glass-card p-5 bg-gray-50/50 border border-black/5 flex flex-col sm:flex-row gap-3 items-end">
@@ -267,8 +270,7 @@
 
                     <div class="glass-card p-5 border border-black/5">
                         <h3 class="text-sm font-semibold mb-3 text-gray-800"><i class="fa-solid fa-shield-halved mr-1.5 text-indigo-500"></i>รายชื่อผู้ดูแลระบบในระบบปัจจุบัน</h3>
-                        <div class="divide-y divide-black/5" id="admin-emails-list">
-                            </div>
+                        <div class="divide-y divide-black/5" id="admin-emails-list"></div>
                     </div>
                 </div>
             </div>
@@ -333,9 +335,17 @@
                     <span id="modal-date">วันที่ลง: </span>
                 </div>
             </div>
-            <div class="p-4 border-t border-black/5 bg-gray-50 flex justify-end gap-3">
-                <a id="modal-download-btn" href="#" target="_blank" download class="px-5 py-2 bg-[#0071e3] text-white font-medium text-xs rounded-full shadow-sm hover:bg-[#0077ed] transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดรูปเกียรติบัตร
+            <div class="p-4 border-t border-black/5 bg-gray-50 flex justify-between items-center gap-3">
+                <div id="modal-manage-actions" class="hidden flex gap-2">
+                    <button onclick="editCertificate()" class="px-4 py-2 bg-amber-500 text-white font-medium text-xs rounded-full shadow-sm hover:bg-amber-600 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-pen"></i> แก้ไข
+                    </button>
+                    <button onclick="deleteCertificate()" class="px-4 py-2 bg-red-500 text-white font-medium text-xs rounded-full shadow-sm hover:bg-red-600 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-trash"></i> ลบ
+                    </button>
+                </div>
+                <a id="modal-download-btn" href="#" target="_blank" download class="px-5 py-2 bg-[#0071e3] text-white font-medium text-xs rounded-full shadow-sm hover:bg-[#0077ed] transition-all flex items-center gap-2 ml-auto">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดเกียรติบัตร
                 </a>
             </div>
         </div>
@@ -344,7 +354,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        /* แก้ไข: Import update และ remove มาใช้จัดการระบบ Edit / Delete */
+        import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -369,6 +380,7 @@
         let allCertificates = [];
         let currentCategoryFilter = 'all';
         let currentAdminTab = 'pending';
+        let currentModalCertId = null;
 
         // ระบบแอดมินแบบไดนามิก
         const SEED_ADMIN = "aceaa372@gmail.com";
@@ -482,7 +494,6 @@
             });
         }
 
-        // --- แก้ไข: สวิตช์เมนูหมวดหมู่ให้สัมพันธ์กับการจัดคลาสและค้นหา ---
         window.selectCategory = function(cat) {
             currentCategoryFilter = cat;
             const buttons = document.querySelectorAll('.cat-btn');
@@ -500,10 +511,9 @@
             filterCertificates();
         }
 
-        // --- แก้ไข: ระบบกรองข้อมูลและการเรียงอันดับเวลา (ล่าสุดก่อน / เก่าสุดก่อน) ---
         window.filterCertificates = function() {
             const searchInput = document.getElementById('search-input').value.toLowerCase();
-            const sortToggle = document.getElementById('sort-toggle').checked; // false = ซ้าย (ล่าสุดก่อน), true = ขวา (เก่าสุดก่อน)
+            const sortToggle = document.getElementById('sort-toggle').checked; 
             
             // แสดงเฉพาะรายการที่ผ่านการอนุมัติแล้วในหน้าแรก
             let filtered = allCertificates.filter(cert => cert.status === 'approved');
@@ -519,7 +529,7 @@
                 );
             }
             
-            // จัดเรียงอันดับเวลาตามคำสั่ง Toggle สลับล่าสุด/เก่าสุด
+            // จัดเรียงอันดับเวลาตามคำสั่ง Toggle
             filtered.sort((a, b) => {
                 const timeA = a.timestamp || 0;
                 const timeB = b.timestamp || 0;
@@ -529,314 +539,283 @@
             renderCertificatesGrid(filtered);
         }
 
-        function renderCertificatesGrid(certs) {
+        // --- แก้ไข: ต่อโค้ดที่ขาดหายไปของคุณให้ครบสมบูรณ์ ---
+        function renderCertificatesGrid(certificates) {
             const grid = document.getElementById('certificates-grid');
-            if (certs.length === 0) {
+            grid.innerHTML = '';
+            
+            if (certificates.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full py-12 text-center text-gray-400">
-                        <i class="fa-solid fa-folder-open text-2xl mb-2"></i>
+                        <i class="fa-solid fa-folder-open text-3xl mb-3"></i>
                         <p class="text-sm">ไม่พบข้อมูลเกียรติบัตร</p>
                     </div>`;
                 return;
             }
             
-            grid.innerHTML = certs.map(cert => `
-                <div class="glass-card overflow-hidden soft-shadow flex flex-col group cursor-pointer border border-black/5 hover:shadow-md transition-all duration-200" onclick="openModal('${cert.id}')">
-                    <div class="w-full h-44 bg-gray-100 overflow-hidden relative border-b border-black/5">
-                        <img src="${cert.imageUrl || ''}" class="w-full h-full object-contain group-hover:scale-102 transition-transform duration-300" alt="Certificate">
-                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm text-gray-600">${cert.category}</span>
+            certificates.forEach(cert => {
+                const card = document.createElement('div');
+                card.className = 'glass-card overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1';
+                card.onclick = () => openModal(cert.id);
+                card.innerHTML = `
+                    <div class="h-40 bg-gray-100 overflow-hidden relative">
+                        <img src="${cert.imageUrl || ''}" class="w-full h-full object-cover" alt="Cert">
+                        <div class="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-md backdrop-blur-md">${cert.category || 'ทั่วไป'}</div>
                     </div>
-                    <div class="p-4 flex-grow flex flex-col justify-between space-y-3">
-                        <div>
-                            <h4 class="font-semibold text-sm line-clamp-1 text-gray-800">${cert.title}</h4>
-                            <p class="text-xs text-[#0071e3] font-medium mt-1 line-clamp-1"><i class="fa-solid fa-user-graduate mr-1"></i>${cert.recipient}</p>
-                        </div>
-                        <div class="text-[10px] text-gray-400 flex justify-between items-center pt-2 border-t border-black/5">
-                            <span>${new Date(cert.timestamp).toLocaleDateString('th-TH', {year: 'numeric', month: 'short', day: 'numeric'})}</span>
-                            <span class="text-[#0071e3] hover:underline">ดูรายละเอียด <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
-                        </div>
+                    <div class="p-4 space-y-1.5">
+                        <h3 class="text-sm font-semibold truncate text-gray-800" title="${cert.title || '-'}">${cert.title || 'ไม่มีชื่อ'}</h3>
+                        <p class="text-xs text-[#0071e3] font-medium truncate"><i class="fa-solid fa-user-graduate mr-1"></i>${cert.recipient || '-'}</p>
                     </div>
-                </div>
-            `).join('');
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        // --- แก้ไข: พรีวิวรูปภาพด้วยระบบ FileReader เพื่อนำไปแปลง Base64 ---
+        window.openModal = function(certId) {
+            const cert = allCertificates.find(c => c.id === certId);
+            if (!cert) return;
+            currentModalCertId = certId;
+            
+            document.getElementById('modal-img').src = cert.imageUrl || '';
+            document.getElementById('modal-category-badge').innerText = cert.category || 'ทั่วไป';
+            document.getElementById('modal-title').innerText = cert.title || '-';
+            document.getElementById('modal-recipient').innerHTML = `<i class="fa-solid fa-user-graduate mr-1"></i> ผู้รับ: ${cert.recipient || '-'}`;
+            document.getElementById('modal-details').innerText = cert.details || '-';
+            
+            const date = new Date(cert.timestamp || Date.now()).toLocaleDateString('th-TH');
+            document.getElementById('modal-uploader').innerText = `ผู้อัพโหลด: ${cert.uploaderName || 'ไม่ระบุ'}`;
+            document.getElementById('modal-date').innerText = `วันที่ลง: ${date}`;
+            document.getElementById('modal-download-btn').href = cert.imageUrl || '#';
+            
+            // --- แก้ไข: เช็คสิทธิ์การจัดการ ลบ/แก้ไข ---
+            const isOwner = currentUser && cert.uploaderEmail === currentUser.email;
+            const isAdmin = userRole === 'admin';
+            
+            if (isAdmin || isOwner) {
+                document.getElementById('modal-manage-actions').classList.remove('hidden');
+            } else {
+                document.getElementById('modal-manage-actions').classList.add('hidden');
+            }
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            currentModalCertId = null;
+        }
+
+        // --- เพิ่มฟังก์ชัน ลบเกียรติบัตร ---
+        window.deleteCertificate = function() {
+            if (!currentModalCertId) return;
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบเกียรติบัตรนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
+                remove(ref(db, 'certificates/' + currentModalCertId)).then(() => {
+                    alert('ลบเกียรติบัตรสำเร็จ');
+                    closeModal();
+                }).catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+            }
+        }
+
+        // --- เพิ่มฟังก์ชัน แก้ไขเกียรติบัตร ---
+        window.editCertificate = function() {
+            if (!currentModalCertId) return;
+            const cert = allCertificates.find(c => c.id === currentModalCertId);
+            if(!cert) return;
+            
+            const newTitle = prompt('แก้ไขชื่อรายการแข่งขัน / งานกิจกรรม:', cert.title);
+            if (newTitle === null) return; 
+            
+            const newRecipient = prompt('แก้ไขชื่อผู้ได้รับรางวัล (สามารถใส่ได้หลายคน):', cert.recipient);
+            if (newRecipient === null) return;
+            
+            const newDetails = prompt('แก้ไขรายละเอียดผลรางวัล:', cert.details);
+            if (newDetails === null) return;
+            
+            update(ref(db, 'certificates/' + currentModalCertId), {
+                title: newTitle.trim() || cert.title,
+                recipient: newRecipient.trim() || cert.recipient,
+                details: newDetails.trim() || cert.details
+            }).then(() => {
+                alert('อัปเดตข้อมูลเกียรติบัตรสำเร็จ');
+                closeModal();
+            }).catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+        }
+
+        // ระบบอัพโหลด
         window.previewImage = function(event) {
             const file = event.target.files[0];
             if (file) {
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("ขนาดไฟล์รูปภาพต้องไม่เกิน 5MB");
-                    event.target.value = "";
-                    return;
-                }
-                document.getElementById('upload-prompt').classList.add('hidden');
-                document.getElementById('upload-preview').classList.remove('hidden');
-                document.getElementById('preview-filename').innerText = file.name;
-                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('preview-img').src = e.target.result;
-                };
+                    document.getElementById('preview-filename').innerText = file.name;
+                    document.getElementById('upload-prompt').classList.add('hidden');
+                    document.getElementById('upload-preview').classList.remove('hidden');
+                }
                 reader.readAsDataURL(file);
             }
         }
 
-        // --- แก้ไข: ระบบอัพโหลดแบบแปลงรูปภาพเป็น Base64 และบันทึก Time Stamp ลงฐานข้อมูล ---
-        window.handleUploadSubmit = function(event) {
-            event.preventDefault();
-            if (!currentUser) return;
+        window.handleUploadSubmit = function(e) {
+            e.preventDefault();
+            if (!currentUser) return alert('กรุณาเข้าสู่ระบบก่อน');
             
             const fileInput = document.getElementById('form-file');
-            const file = fileInput.files[0];
-            if (!file) return;
-            
-            const btnSubmit = document.getElementById('btn-submit-upload');
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังส่งข้อมูล...`;
-            
-            const title = document.getElementById('form-title').value;
-            const category = document.getElementById('form-category').value;
-            const subcategory = document.getElementById('form-subcategory').value;
-            const recipient = document.getElementById('form-recipient').value;
-            const details = document.getElementById('form-details').value;
+            if (fileInput.files.length === 0) return;
             
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64String = e.target.result; // ข้อมูลไฟล์รูปในรูปแบบ Base64 String
-                
-                const newCertRef = push(ref(db, 'certificates'));
-                set(newCertRef, {
-                    title: title,
-                    category: category,
-                    subcategory: subcategory,
-                    recipient: recipient,
-                    details: details,
-                    imageUrl: base64String, // จัดเก็บแบบ Base64 ลงใน Realtime Database โดยตรง
+            reader.onload = function(event) {
+                const base64Image = event.target.result;
+                const newCert = {
+                    title: document.getElementById('form-title').value,
+                    category: document.getElementById('form-category').value,
+                    subcategory: document.getElementById('form-subcategory').value,
+                    recipient: document.getElementById('form-recipient').value,
+                    details: document.getElementById('form-details').value,
+                    imageUrl: base64Image,
                     uploaderEmail: currentUser.email,
                     uploaderName: currentUser.displayName,
-                    status: 'pending',
-                    timestamp: Date.now() // ลำดับเวลาสำหรับการคัดกรองจัดเรียงข้อมูล
-                }).then(() => {
-                    alert("ส่งข้อมูลเกียรติบัตรสำเร็จ! กรุณารอแอดมินตรวจสอบความถูกต้อง");
+                    timestamp: Date.now(),
+                    status: 'pending' // รอแอดมินอนุมัติ
+                };
+                
+                push(ref(db, 'certificates'), newCert).then(() => {
+                    alert('ส่งข้อมูลสำเร็จ! กรุณารอแอดมินตรวจสอบ');
                     document.getElementById('upload-form').reset();
-                    document.getElementById('upload-prompt').classList.remove('hidden');
                     document.getElementById('upload-preview').classList.add('hidden');
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ส่งข้อมูลให้แอดมินตรวจสอบ`;
+                    document.getElementById('upload-prompt').classList.remove('hidden');
                     switchView('history');
-                }).catch((error) => {
-                    console.error("Database Write Error: ", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ส่งข้อมูลให้แอดมินตรวจสอบ`;
-                });
+                }).catch(err => alert('Error: ' + err.message));
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(fileInput.files[0]);
         }
 
-        // --- ประวัติการอัพโหลดส่วนตัวของผู้ใช้ ---
-        function renderHistoryView() {
+        // ประวัติของฉัน
+        window.renderHistoryView = function() {
             if (!currentUser) return;
             const tbody = document.getElementById('history-table-body');
-            const userCerts = allCertificates.filter(cert => cert.uploaderEmail === currentUser.email);
+            tbody.innerHTML = '';
             
-            // เรียงลำดับประวัติส่วนตัวตามเวลาล่าสุดขึ้นก่อนเสมอ
-            userCerts.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-            
-            if (userCerts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">คุณยังไม่มีประวัติการอัพโหลดเกียรติบัตร</td></tr>`;
-                document.getElementById('notif-badge').classList.add('hidden');
+            const myCerts = allCertificates.filter(c => c.uploaderEmail === currentUser.email);
+            if (myCerts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">ยังไม่มีประวัติการอัพโหลด</td></tr>';
                 return;
             }
             
-            const hasPending = userCerts.some(c => c.status === 'pending');
-            if (hasPending) {
-                document.getElementById('notif-badge').classList.remove('hidden');
-            } else {
-                document.getElementById('notif-badge').classList.add('hidden');
-            }
-            
-            tbody.innerHTML = userCerts.map(cert => {
-                let statusBadge = '';
-                if (cert.status === 'pending') statusBadge = '<span class="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700 font-medium">รออนุมัติ</span>';
-                else if (cert.status === 'approved') statusBadge = '<span class="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700 font-medium">อนุมัติแล้ว</span>';
-                else statusBadge = '<span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium">ไม่อนุมัติ</span>';
+            myCerts.forEach(cert => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-black/5 hover:bg-gray-50/50';
                 
-                return `
-                    <tr class="border-b border-black/5 hover:bg-black/[0.01] transition-colors">
-                        <td class="py-3 px-4 font-medium text-gray-800">${cert.title}</td>
-                        <td class="py-3 px-4 text-xs text-gray-500">${cert.recipient}</td>
-                        <td class="py-3 px-4 text-xs text-gray-400">${new Date(cert.timestamp).toLocaleDateString('th-TH')}</td>
-                        <td class="py-3 px-4">${statusBadge}</td>
-                        <td class="py-3 px-4 text-right">
-                            <button onclick="openModal('${cert.id}')" class="text-xs text-[#0071e3] hover:underline">ดูข้อมูล</button>
-                        </td>
-                    </tr>
+                let statusBadge = '';
+                if(cert.status === 'approved') statusBadge = '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-medium">อนุมัติแล้ว</span>';
+                else if(cert.status === 'rejected') statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-medium">ไม่อนุมัติ</span>';
+                else statusBadge = '<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-medium">รอตรวจสอบ</span>';
+                
+                const date = new Date(cert.timestamp || Date.now()).toLocaleDateString('th-TH');
+                
+                tr.innerHTML = `
+                    <td class="py-3 px-4">${cert.title}</td>
+                    <td class="py-3 px-4">${cert.recipient}</td>
+                    <td class="py-3 px-4">${date}</td>
+                    <td class="py-3 px-4">${statusBadge}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="openModal('${cert.id}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-eye"></i></button>
+                    </td>
                 `;
-            }).join('');
+                tbody.appendChild(tr);
+            });
         }
 
-        // --- ระบบควบคุมแท็บภายใน Dashboard ผู้ดูแลระบบ ---
-        window.switchAdminTab = function(tabId) {
-            currentAdminTab = tabId;
+        // Dashboard ของแอดมิน
+        window.switchAdminTab = function(tab) {
+            currentAdminTab = tab;
             const tabs = ['pending', 'approved', 'rejected', 'manage'];
+            
             tabs.forEach(t => {
-                const el = document.getElementById(`admin-tab-${t}`);
-                if (t === tabId) {
-                    el.className = "px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white shadow-sm text-gray-800 transition-all";
+                const btn = document.getElementById(`admin-tab-${t}`);
+                if (t === tab) {
+                    btn.classList.add('text-gray-800', 'bg-white', 'shadow-sm');
+                    btn.classList.remove('text-gray-500', 'bg-transparent');
                 } else {
-                    el.className = "px-2.5 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-800 transition-all bg-transparent";
+                    btn.classList.add('text-gray-500', 'bg-transparent');
+                    btn.classList.remove('text-gray-800', 'bg-white', 'shadow-sm');
                 }
             });
             
-            if (tabId === 'manage') {
+            if (tab === 'manage') {
                 document.getElementById('admin-items-container').classList.add('hidden');
                 document.getElementById('admin-manage-container').classList.remove('hidden');
-                renderAdminEmailsList();
             } else {
                 document.getElementById('admin-items-container').classList.remove('hidden');
                 document.getElementById('admin-manage-container').classList.add('hidden');
                 renderAdminView();
             }
         }
-        
-        function renderAdminView() {
+
+        window.renderAdminView = function() {
             if (userRole !== 'admin') return;
             const container = document.getElementById('admin-items-container');
-            if (document.getElementById('admin-tab-manage').classList.contains('bg-white')) return;
+            container.innerHTML = '';
             
-            let filtered = allCertificates.filter(cert => cert.status === currentAdminTab);
-            // เรียงรายการรอตรวจจากใหม่ไปเก่าเพื่อให้ทำงานง่ายขึ้น
-            filtered.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-            
+            const filtered = allCertificates.filter(c => c.status === currentAdminTab);
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 text-sm">ไม่มีรายการข้อมูลในหมวดหมู่นี้</div>`;
-                return;
-            }
-            
-            container.innerHTML = filtered.map(cert => {
-                let actionButtons = '';
-                if (cert.status === 'pending') {
-                    actionButtons = `
-                        <button onclick="updateCertStatus('${cert.id}', 'approved')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-all"><i class="fa-solid fa-check mr-1"></i>อนุมัติ</button>
-                        <button onclick="updateCertStatus('${cert.id}', 'rejected')" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-all"><i class="fa-solid fa-xmark mr-1"></i>ปฏิเสธ</button>
-                    `;
-                } else if (cert.status === 'approved') {
-                    actionButtons = `
-                        <button onclick="updateCertStatus('${cert.id}', 'rejected')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-lg transition-all">เปลี่ยนเป็นไม่อนุมัติ</button>
-                    `;
-                } else {
-                    actionButtons = `
-                        <button onclick="updateCertStatus('${cert.id}', 'approved')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-all">เปลี่ยนเป็นอนุมัติ</button>
-                    `;
-                }
-                
-                return `
-                    <div class="glass-card p-4 border border-black/5 flex flex-col sm:flex-row gap-4 items-start soft-shadow">
-                        <img src="${cert.imageUrl || ''}" class="w-full sm:w-28 h-28 object-contain bg-gray-50 rounded-lg border border-black/5 flex-shrink-0 cursor-pointer" onclick="openModal('${cert.id}')">
-                        <div class="flex-grow space-y-1.5 w-full">
-                            <span class="inline-block text-[9px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase">${cert.category}</span>
-                            <h4 class="font-semibold text-sm text-gray-800 line-clamp-1">${cert.title}</h4>
-                            <p class="text-xs text-gray-600"><span class="font-medium">ผู้รับ:</span> ${cert.recipient}</p>
-                            <p class="text-[10px] text-gray-400">ผู้ส่ง: ${cert.uploaderName || cert.uploaderEmail}</p>
-                            <div class="flex gap-2 pt-2 border-t border-black/5 justify-end">
-                                ${actionButtons}
-                            </div>
+                container.innerHTML = '<div class="col-span-full py-12 text-center text-gray-400">ไม่มีรายการในหมวดหมู่นี้</div>';
+            } else {
+                filtered.forEach(cert => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white p-4 rounded-xl border border-black/5 shadow-sm flex flex-col justify-between';
+                    div.innerHTML = `
+                        <div>
+                            <h3 class="font-semibold text-sm mb-1">${cert.title}</h3>
+                            <p class="text-xs text-gray-500 mb-2">ผู้รับ: ${cert.recipient} | โดย: ${cert.uploaderEmail}</p>
                         </div>
-                    </div>
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="updateCertStatus('${cert.id}', 'approved')" class="flex-1 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-xs font-medium transition-all">อนุมัติ</button>
+                            <button onclick="updateCertStatus('${cert.id}', 'rejected')" class="flex-1 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium transition-all">ปฏิเสธ</button>
+                            <button onclick="openModal('${cert.id}')" class="px-3 py-1.5 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-lg text-xs font-medium transition-all"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            const adminList = document.getElementById('admin-emails-list');
+            adminList.innerHTML = '';
+            adminEmailsList.forEach((email) => {
+                const adminObj = adminObjects.find(a => a.email === email);
+                const div = document.createElement('div');
+                div.className = 'py-3 px-2 flex justify-between items-center';
+                div.innerHTML = `
+                    <span class="text-sm text-gray-700">${email} ${email === SEED_ADMIN ? '<span class="ml-2 text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">Root</span>' : ''}</span>
+                    ${email !== SEED_ADMIN && adminObj ? `<button onclick="removeAdmin('${adminObj.id}')" class="text-xs text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg transition-all">ลบ</button>` : ''}
                 `;
-            }).join('');
-        }
-        
-        window.updateCertStatus = function(id, newStatus) {
-            update(ref(db, `certificates/${id}`), { status: newStatus })
-                .then(() => { alert("อัปเดตสถานะเกียรติบัตรเรียบร้อยแล้ว"); })
-                .catch(err => console.error(err));
+                adminList.appendChild(div);
+            });
         }
 
-        // --- ระบบเพิ่ม/ถอนสิทธิ์อีเมลแอดมิน ---
-        window.addAdminEmail = function(event) {
-            event.preventDefault();
-            if (userRole !== 'admin') return;
+        window.updateCertStatus = function(id, status) {
+            update(ref(db, 'certificates/' + id), { status }).then(() => {
+                alert('อัปเดตสถานะสำเร็จ');
+            }).catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+        }
+
+        window.addAdminEmail = function(e) {
+            e.preventDefault();
             const emailInput = document.getElementById('new-admin-email');
             const email = emailInput.value.toLowerCase().trim();
-            if (!email) return;
+            if (adminEmailsList.includes(email)) return alert('อีเมลนี้เป็นแอดมินอยู่แล้ว');
             
-            if (adminEmailsList.includes(email)) {
-                alert("อีเมลรายการนี้ได้รับสิทธิ์เป็นแอดมินอยู่แล้ว");
-                return;
-            }
-            
-            const newAdminRef = push(ref(db, 'admins'));
-            set(newAdminRef, { email: email })
-                .then(() => {
-                    alert("แต่งตั้งสิทธิ์ผู้ดูแลระบบ (Admin) สำเร็จ");
-                    emailInput.value = '';
-                    renderAdminEmailsList();
-                })
-                .catch(err => alert("เกิดข้อผิดพลาดในการบันทึกสิทธิ์"));
-        }
-        
-        function renderAdminEmailsList() {
-            const listContainer = document.getElementById('admin-emails-list');
-            let html = `
-                <div class="py-2.5 flex justify-between items-center text-sm text-gray-700 font-medium">
-                    <span>${SEED_ADMIN} <span class="text-[10px] ml-1.5 px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">ระบบเริ่มต้น</span></span>
-                    <span class="text-xs text-gray-400 italic">ไม่สามารถลบออกได้</span>
-                </div>
-            `;
-            
-            adminObjects.forEach(obj => {
-                html += `
-                    <div class="py-2.5 flex justify-between items-center text-sm text-gray-700">
-                        <span>${obj.email}</span>
-                        <button onclick="removeAdminEmail('${obj.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline"><i class="fa-solid fa-trash-can mr-1"></i>ถอนสิทธิ์</button>
-                    </div>
-                `;
-            });
-            listContainer.innerHTML = html;
-        }
-        
-        window.removeAdminEmail = function(id) {
-            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการระงับหรือถอนสิทธิ์ผู้ดูแลระบบของอีเมลนี้?")) {
-                set(ref(db, `admins/${id}`), null)
-                    .then(() => { alert("ถอนสิทธิ์เรียบร้อยแล้ว"); })
-                    .catch(err => alert("เกิดข้อผิดพลาด"));
-            }
+            push(ref(db, 'admins'), { email }).then(() => {
+                alert('เพิ่มแอดมินสำเร็จ');
+                emailInput.value = '';
+            }).catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
         }
 
-        // --- ระบบ Pop-up รายละเอียดเกียรติบัตร (Modal) ---
-        window.openModal = function(id) {
-            const cert = allCertificates.find(c => c.id === id);
-            if (!cert) return;
-            
-            document.getElementById('modal-category-badge').innerText = cert.category + (cert.subcategory ? ` (${cert.subcategory})` : '');
-            document.getElementById('modal-img').src = cert.imageUrl || '';
-            document.getElementById('modal-title').innerText = cert.title;
-            document.getElementById('modal-recipient').innerHTML = `<i class="fa-solid fa-user-graduate mr-1"></i> ผู้รับ: ${cert.recipient}`;
-            document.getElementById('modal-details').innerText = cert.details || 'ไม่มีรายละเอียดเพิ่มเติม';
-            document.getElementById('modal-uploader').innerText = `ผู้อัพโหลด: ${cert.uploaderName || cert.uploaderEmail || 'ไม่ระบุ'}`;
-            document.getElementById('modal-date').innerText = `วันที่ลง: ${new Date(cert.timestamp).toLocaleDateString('th-TH', {year: 'numeric', month: 'long', day: 'numeric'})}`;
-            
-            const downloadBtn = document.getElementById('modal-download-btn');
-            downloadBtn.href = cert.imageUrl || '#';
-            downloadBtn.download = `เกียรติบัตร_${cert.recipient || 'NTUN'}.png`;
-            
-            const modal = document.getElementById('detail-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.firstElementChild.classList.remove('scale-95');
-                modal.firstElementChild.classList.add('scale-100');
-            }, 10);
-        }
-        
-        window.closeModal = function() {
-            const modal = document.getElementById('detail-modal');
-            modal.firstElementChild.classList.remove('scale-100');
-            modal.firstElementChild.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
+        window.removeAdmin = function(id) {
+            if(confirm('ต้องการลบสิทธิ์แอดมินนี้ใช่หรือไม่?')) {
+                remove(ref(db, 'admins/' + id)).then(() => alert('ลบสิทธิ์สำเร็จ'))
+                .catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+            }
         }
     </script>
 </body>

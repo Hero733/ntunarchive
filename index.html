@@ -17,51 +17,121 @@
             theme: { 
                 extend: { 
                     fontFamily: { sans: ['Inter', 'Anuphan', 'sans-serif'], },
-                    colors: { apple: { gray: '#f5f5f7', dark: '#1d1d1f', blue: '#0066cc' } }
+                    colors: { 
+                        apple: { gray: '#f5f5f7', dark: '#1d1d1f', blue: '#0066cc' } 
+                    }
                 } 
             }
         }
     </script>
 
     <style>
-        body { background-color: #f5f5f7; color: #1d1d1f; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body { 
+            background-color: #f5f5f7; 
+            color: #1d1d1f; 
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased; 
+        }
         
         /* Glassmorphism */
-        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
-        .glass-dark { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .glass { 
+            background: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: saturate(180%) blur(20px); 
+            -webkit-backdrop-filter: saturate(180%) blur(20px); 
+        }
+        .glass-dark { 
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+        }
         
-        /* Soft Shadows */
+        /* Soft Shadows & Hover */
         .apple-shadow { box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); }
-        .apple-card-hover { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .apple-card-hover:hover { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); transform: translateY(-4px); }
+        .apple-card-hover { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .apple-card-hover:hover { 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); 
+            transform: translateY(-4px); 
+        }
         
         /* macOS Dock */
-        .dock-container { padding: 10px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.4); display: flex; gap: 12px; }
-        .dock-item { width: 56px; height: 56px; border-radius: 20px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); }
-        .dock-item:hover { transform: scale(1.3) translateY(-12px); z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .dock-container { 
+            padding: 10px; 
+            border-radius: 32px; 
+            border: 1px solid rgba(255,255,255,0.4); 
+            display: flex; 
+            gap: 12px; 
+        }
+        .dock-item { 
+            width: 56px; height: 56px; 
+            border-radius: 20px; 
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 1.5rem; cursor: pointer; 
+            border: 1px solid rgba(0,0,0,0.05); 
+        }
+        .dock-item:hover { 
+            transform: scale(1.15) translateY(-8px); 
+            z-index: 10; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
         .dock-active { background: linear-gradient(135deg, #007AFF, #0056b3); color: white; border: none; }
         .dock-inactive { background: white; color: #555; }
         
-        /* Modals & Animations */
-        .modal-enter { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        /* Animations */
+        .modal-enter { animation: modalIn 0.3s ease-out forwards; }
+        @keyframes modalIn { 
+            from { opacity: 0; transform: scale(0.95) translateY(10px); } 
+            to { opacity: 1; transform: scale(1) translateY(0); } 
+        }
         
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Loader */
-        .spinner { width: 40px; height: 40px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #007AFF; animation: spin 1s ease-in-out infinite; }
+        .spinner { 
+            width: 40px; height: 40px; 
+            border: 3px solid rgba(0,0,0,0.1); 
+            border-radius: 50%; 
+            border-top-color: #007AFF; 
+            animation: spin 0.8s linear infinite; 
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            min-width: 300px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast.show { transform: translateX(0); }
     </style>
 </head>
 <body>
 
-    <div id="loader" class="fixed inset-0 bg-[#f5f5f7] z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="loader" class="fixed inset-0 bg-[#f5f5f7] z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <div class="spinner mb-6"></div>
         <h1 class="text-2xl font-semibold tracking-tight text-gray-800">NTUN Vault</h1>
-        <p class="text-sm text-gray-500 mt-2">กำลังเตรียมพื้นที่จัดเก็บ...</p>
+        <p class="text-sm text-gray-500 mt-2">กำลังเตรียมความพร้อม...</p>
     </div>
 
     <div id="login-view" class="hidden min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
@@ -97,7 +167,7 @@
                     <p id="user-name" class="text-sm font-semibold text-gray-900">Name</p>
                     <span id="user-role" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase tracking-wider">Student</span>
                 </div>
-                <button onclick="window.logout()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-600 transition-colors flex items-center justify-center">
+                <button onclick="window.logout()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-600 transition-colors flex items-center justify-center" title="ออกจากระบบ">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </button>
             </div>
@@ -137,23 +207,24 @@
         <main id="section-upload" class="app-section hidden max-w-3xl mx-auto px-4 sm:px-6 pt-10 fade-in">
             <div class="text-center mb-10">
                 <h2 class="text-4xl font-bold tracking-tight mb-2">เพิ่มผลงาน</h2>
-                <p class="text-gray-500">บันทึกเกียรติบัตรของคุณเข้าสู่ระบบ (ต้องรอผู้บริหารอนุมัติ)</p>
+                <p class="text-gray-500">บันทึกเกียรติบัตรของคุณเข้าสู่ระบบ (ระบบจะบีบอัดรูปให้อัตโนมัติ)</p>
             </div>
 
             <form id="upload-form" onsubmit="window.submitCertificate(event)" class="bg-white p-6 sm:p-10 rounded-[32px] apple-shadow border border-gray-100 space-y-6">
                 
                 <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">รูปภาพเกียรติบัตร (สแกนหรือถ่ายให้ชัดเจน)</label>
+                    <label class="block text-sm font-semibold text-gray-700">รูปภาพเกียรติบัตร</label>
                     <div id="dropzone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-gray-300 rounded-[24px] p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-colors h-64 flex flex-col justify-center items-center relative overflow-hidden group">
-                        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="window.handleImageSelect(event)">
+                        <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp" class="hidden" onchange="window.handleImageSelect(event)">
                         
                         <div id="dropzone-text" class="space-y-3">
                             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mx-auto group-hover:scale-110 transition-transform"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                             <p class="font-medium text-gray-700">แตะเพื่อเลือกรูปภาพ</p>
+                            <p class="text-xs text-gray-400">รองรับ JPG, PNG (ขนาดไม่เกิน 10MB)</p>
                         </div>
                         
                         <img id="image-preview" src="" class="hidden absolute inset-0 w-full h-full object-cover">
-                        <div id="remove-img-btn" onclick="window.removeImage(event)" class="hidden absolute top-4 right-4 w-8 h-8 bg-black/60 text-white rounded-full items-center justify-center hover:bg-black transition-colors z-10"><i class="fa-solid fa-times"></i></div>
+                        <div id="remove-img-btn" onclick="window.removeImage(event)" class="hidden absolute top-4 right-4 w-8 h-8 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black transition-colors z-10"><i class="fa-solid fa-times"></i></div>
                     </div>
                 </div>
 
@@ -194,6 +265,10 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
                     <textarea id="f-desc" rows="3" placeholder="อธิบายเพิ่มเติมเกี่ยวกับการแข่งครั้งนี้ (สถานที่, วันที่, ความรู้สึก...)" class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"></textarea>
+                </div>
+
+                <div id="upload-progress-container" class="hidden w-full bg-gray-200 rounded-full h-2.5 mb-4 overflow-hidden">
+                    <div id="upload-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
                 </div>
 
                 <button type="submit" id="btn-submit" class="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 rounded-2xl transition-all flex items-center justify-center gap-2">
@@ -255,7 +330,7 @@
             </button>
 
             <div class="md:w-[55%] bg-gray-100 flex items-center justify-center p-4 relative min-h-[300px]">
-                <img id="m-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg drop-shadow-lg">
+                <img id="m-img" src="" loading="lazy" class="max-w-full max-h-[85vh] object-contain rounded-lg drop-shadow-lg">
             </div>
             
             <div class="md:w-[45%] p-8 flex flex-col justify-between overflow-y-auto">
@@ -305,7 +380,7 @@
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-        // อัปเดต Config เป็น ntunarchive แล้ว!
+        // 🔥 FIREBASE CONFIG ของผู้ใช้
         const firebaseConfig = {
             apiKey: "AIzaSyCWlvcyFx7X90MQvkuFTqS9Dq-ylyKb8ok",
             authDomain: "ntunarchive.firebaseapp.com",
@@ -321,18 +396,19 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // State Management
+        // --- STATE VARIABLES ---
         let currentUser = null;
         let dbCache = [];
         let activeCatFilter = 'ทั้งหมด';
         let currentAdminState = 'pending';
         let uploadedFile = null;
+        let adminEmails = ['aceaa372@gmail.com']; // Admin เริ่มต้น
 
-        let adminEmails = ['aceaa372@gmail.com'];
         if(localStorage.getItem('ntun_admins')) {
             try { adminEmails = JSON.parse(localStorage.getItem('ntun_admins')); } catch(e){}
         }
 
+        // --- SUBCATEGORIES DATA ---
         const subCatData = {
             "วิทยาศาสตร์": ["ฟิสิกส์", "เคมี", "ชีววิทยา", "ดาราศาสตร์", "โครงงานวิทยาศาสตร์", "อื่นๆ"],
             "คณิตศาสตร์": ["โอลิมปิกวิชาการ", "คิดเลขเร็ว", "แก้ปัญหาคณิต", "อื่นๆ"],
@@ -349,18 +425,49 @@
         const loginView = document.getElementById('login-view');
         const appView = document.getElementById('app-view');
 
+        // 💥 ฟังก์ชันใหม่: แสดง Toast Notification สวยๆ
+        window.showToast = (message, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let icon = type === 'success' ? '<i class="fa-solid fa-check-circle text-green-500 text-xl"></i>' : '<i class="fa-solid fa-exclamation-circle text-red-500 text-xl"></i>';
+            
+            toast.className = 'toast';
+            toast.innerHTML = `${icon} <span class="font-medium text-gray-700 text-sm">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // ทำให้เด้งเข้ามา
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // หายไปเองหลัง 3 วินาที
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        };
+
         // --- AUTHENTICATION ---
         onAuthStateChanged(auth, (user) => {
-            if (user) verifyUser(user);
-            else showLogin();
+            if (user) {
+                verifyUser(user);
+            } else {
+                showLogin();
+            }
         });
 
         window.login = () => {
             const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(err => alert("ล็อกอินไม่สำเร็จ: " + err.message));
+            signInWithPopup(auth, provider).catch(err => {
+                console.error(err);
+                window.showToast("ยกเลิกการล็อกอิน หรือเกิดข้อผิดพลาด", 'error');
+            });
         };
 
-        window.logout = () => signOut(auth);
+        window.logout = () => {
+            signOut(auth);
+            window.showToast("ออกจากระบบเรียบร้อยแล้ว", 'success');
+        };
 
         function showLogin() {
             loader.classList.add('opacity-0');
@@ -369,7 +476,7 @@
                 loginView.classList.remove('hidden');
                 appView.classList.add('hidden');
                 loginView.classList.add('fade-in');
-            }, 500);
+            }, 300);
         }
 
         function verifyUser(user) {
@@ -378,7 +485,7 @@
             const isAdmin = adminEmails.includes(email);
 
             if (!isStudent && !isAdmin) {
-                alert("จำกัดสิทธิ์เฉพาะอีเมล @ntun.ac.th หรือแอดมินเท่านั้น");
+                window.showToast("ขออภัย! ระบบนี้จำกัดเฉพาะอีเมล @ntun.ac.th", 'error');
                 signOut(auth);
                 return;
             }
@@ -410,7 +517,7 @@
                 initAppUI();
             } catch (error) {
                 console.error(error);
-                alert("ดึงข้อมูลไม่ได้ กรุณาเช็ค Firestore Rules (ต้อง allow read, write)");
+                window.showToast("ดึงข้อมูลไม่ได้! กรุณาตรวจสอบการตั้งค่า Firebase Database Rules", 'error');
             }
             
             setTimeout(() => {
@@ -421,7 +528,7 @@
                     appView.classList.remove('hidden');
                     appView.classList.add('fade-in');
                 }, 300);
-            }, 500);
+            }, 300);
         }
 
         function initAppUI() {
@@ -442,6 +549,7 @@
             document.getElementById(`dock-${tab}`).classList.add('dock-active');
             
             if(tab === 'admin') window.renderAdmin();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         // --- GALLERY LOGIC ---
@@ -456,7 +564,11 @@
             });
         }
 
-        window.setCatFilter = (cat) => { activeCatFilter = cat; renderCatFilters(); window.renderGallery(); };
+        window.setCatFilter = (cat) => { 
+            activeCatFilter = cat; 
+            renderCatFilters(); 
+            window.renderGallery(); 
+        };
 
         window.renderGallery = () => {
             const grid = document.getElementById('gallery-grid');
@@ -465,19 +577,28 @@
             grid.innerHTML = '';
 
             let items = dbCache.filter(i => i.status === 'approved');
-            if(activeCatFilter !== 'ทั้งหมด') items = items.filter(i => i.mainCat === activeCatFilter);
-            if(search) items = items.filter(i => i.title.toLowerCase().includes(search) || i.name.toLowerCase().includes(search));
+            
+            if(activeCatFilter !== 'ทั้งหมด') {
+                items = items.filter(i => i.mainCat === activeCatFilter);
+            }
+            if(search) {
+                items = items.filter(i => i.title.toLowerCase().includes(search) || i.name.toLowerCase().includes(search));
+            }
             
             items.sort((a,b) => sort === 'new' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
-            if(items.length === 0) { document.getElementById('gallery-empty').classList.remove('hidden'); return; }
+            if(items.length === 0) { 
+                document.getElementById('gallery-empty').classList.remove('hidden'); 
+                return; 
+            }
+            
             document.getElementById('gallery-empty').classList.add('hidden');
 
             items.forEach(item => {
                 grid.innerHTML += `
                 <div onclick="window.openDetail('${item.id}')" class="bg-white rounded-[24px] p-3 apple-shadow apple-card-hover cursor-pointer border border-gray-100 flex flex-col group h-full">
                     <div class="w-full h-48 rounded-[18px] bg-gray-50 overflow-hidden relative mb-3">
-                        <img src="${item.imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="${item.imgUrl}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <div class="absolute top-2 left-2 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">${item.mainCat}</div>
                     </div>
                     <div class="px-2 pb-2 flex-1 flex flex-col">
@@ -493,13 +614,23 @@
             const main = document.getElementById('f-maincat').value;
             const sub = document.getElementById('f-subcat');
             sub.innerHTML = '';
-            if(!main) { sub.innerHTML = '<option value="">-- เลือกหมวดหลักก่อน --</option>'; return; }
+            if(!main) { 
+                sub.innerHTML = '<option value="">-- เลือกหมวดหลักก่อน --</option>'; 
+                return; 
+            }
             subCatData[main].forEach(s => sub.innerHTML += `<option value="${s}">${s}</option>`);
         };
 
         window.handleImageSelect = (e) => {
             const file = e.target.files[0];
             if(!file) return;
+
+            // 💥 ดักจับขนาดไฟล์ ถ้าเกิน 10MB ให้เตือน
+            if (file.size > 10 * 1024 * 1024) {
+                window.showToast("ไฟล์รูปภาพใหญ่เกิน 10MB กรุณาเลือกไฟล์ที่เล็กลง", 'error');
+                return;
+            }
+
             uploadedFile = file;
             const reader = new FileReader();
             reader.onload = (ev) => {
@@ -522,52 +653,125 @@
             document.getElementById('dropzone').classList.add('border-dashed', 'border-gray-300');
         };
 
+        // ฟังก์ชันบีบอัดรูปภาพ
+        function compressImage(file, maxWidth, maxHeight, quality) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height && width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        } else if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(blob => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', quality);
+                    };
+                };
+            });
+        }
+
         window.submitCertificate = async (e) => {
             e.preventDefault();
-            if(!uploadedFile) return alert("กรุณาเลือกรูปภาพเกียรติบัตรด้วยครับ!");
+            if(!uploadedFile) {
+                window.showToast("กรุณาเลือกรูปภาพเกียรติบัตรด้วยครับ!", 'error');
+                return;
+            }
 
             const btn = document.getElementById('btn-submit');
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังอัปโหลด...';
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังเตรียมไฟล์...';
             btn.disabled = true;
+            progressContainer.classList.remove('hidden');
+            progressBar.style.width = '0%';
 
             try {
+                // 1. บีบอัดไฟล์ก่อนอัปโหลด
+                const compressedFile = await compressImage(uploadedFile, 1200, 1200, 0.7);
+
                 const ts = Date.now();
-                const path = `certs/${ts}_${uploadedFile.name}`;
+                const path = `certs/${ts}_${compressedFile.name}`;
                 const storageRef = ref(storage, path);
-                
-                await uploadBytesResumable(storageRef, uploadedFile);
-                const url = await getDownloadURL(storageRef);
+                const uploadTask = uploadBytesResumable(storageRef, compressedFile);
 
-                await addDoc(collection(db, "certificates"), {
-                    status: "pending", 
-                    name: document.getElementById('f-name').value.trim(),
-                    mainCat: document.getElementById('f-maincat').value,
-                    subCat: document.getElementById('f-subcat').value,
-                    title: document.getElementById('f-title').value.trim(),
-                    desc: document.getElementById('f-desc').value.trim() || "-",
-                    imgUrl: url,
-                    imgPath: path,
-                    uploader: currentUser.email,
-                    createdAt: ts
-                });
+                // 2. ติดตามสถานะการอัปโหลด
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = progress + '%';
+                        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> อัปโหลด ${Math.round(progress)}%`;
+                    }, 
+                    (error) => {
+                        console.error(error);
+                        throw error;
+                    }, 
+                    async () => {
+                        // 3. อัปโหลดเสร็จ บันทึกข้อมูลลง Firestore
+                        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึกข้อมูล...';
+                        const url = await getDownloadURL(uploadTask.snapshot.ref);
 
-                alert("ส่งผลงานเรียบร้อย! รอแอดมินตรวจสอบเพื่อนำขึ้นหอเกียรติยศครับ");
-                document.getElementById('upload-form').reset();
-                window.removeImage(new Event('click'));
-                window.switchTab('gallery');
-                await fetchData();
+                        await addDoc(collection(db, "certificates"), {
+                            status: "pending", 
+                            name: document.getElementById('f-name').value.trim(),
+                            mainCat: document.getElementById('f-maincat').value,
+                            subCat: document.getElementById('f-subcat').value,
+                            title: document.getElementById('f-title').value.trim(),
+                            desc: document.getElementById('f-desc').value.trim() || "-",
+                            imgUrl: url,
+                            imgPath: path,
+                            uploader: currentUser.email,
+                            createdAt: ts
+                        });
+
+                        window.showToast("ส่งผลงานเรียบร้อย! รอแอดมินตรวจสอบ", 'success');
+                        
+                        // เคลียร์ฟอร์ม
+                        document.getElementById('upload-form').reset();
+                        window.removeImage(new Event('click'));
+                        progressContainer.classList.add('hidden');
+                        
+                        // กลับหน้าแรกและรีเฟรชข้อมูล
+                        window.switchTab('gallery');
+                        await fetchData();
+                        
+                        // รีเซ็ตปุ่ม
+                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ';
+                        btn.disabled = false;
+                    }
+                );
+
             } catch(err) {
                 console.error(err);
-                alert("เกิดข้อผิดพลาดในการบันทึก");
-            } finally {
-                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ';
+                window.showToast("เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่", 'error');
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ลองอีกครั้ง';
                 btn.disabled = false;
+                progressContainer.classList.add('hidden');
             }
         };
 
         // --- ADMIN LOGIC ---
         window.setAdminTab = (tab) => {
             currentAdminState = tab;
+            
+            // อัปเดตสีของ Tab
             document.querySelectorAll('.admin-tab').forEach(el => {
                 el.classList.remove('border-amber-500','border-green-500','border-red-500','text-amber-600','text-green-600','text-red-600');
                 el.classList.add('border-transparent','text-gray-500');
@@ -590,6 +794,7 @@
             document.getElementById('badge-approved').innerText = a;
             document.getElementById('badge-rejected').innerText = r;
             
+            // แจ้งเตือนจุดแดงที่ปุ่ม Admin ถ้ารอตรวจมีค่า > 0
             const dot = document.getElementById('dock-admin-dot');
             if(p > 0) dot.classList.remove('hidden'); else dot.classList.add('hidden');
 
@@ -598,47 +803,68 @@
             const items = dbCache.filter(i => i.status === currentAdminState);
 
             if(items.length === 0) {
-                list.innerHTML = `<div class="text-center py-10 text-gray-400">ไม่มีรายการในหมวดนี้</div>`;
+                list.innerHTML = `<div class="text-center py-10 text-gray-400"><i class="fa-solid fa-folder-open text-4xl mb-3 opacity-30"></i><br>ไม่มีรายการในหมวดนี้</div>`;
                 return;
             }
 
             items.forEach(item => {
                 const date = new Date(item.createdAt).toLocaleDateString('th-TH');
                 list.innerHTML += `
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 apple-shadow flex flex-col md:flex-row gap-4 items-start md:items-center">
-                    <img src="${item.imgUrl}" class="w-32 h-20 object-cover rounded-xl border border-gray-200 cursor-pointer" onclick="window.openDetail('${item.id}')">
-                    <div class="flex-1">
-                        <div class="flex gap-2 text-[10px] font-bold mb-1"><span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">${item.mainCat}</span></div>
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 apple-shadow flex flex-col md:flex-row gap-4 items-start md:items-center transition-all hover:border-gray-300">
+                    <img src="${item.imgUrl}" loading="lazy" class="w-full md:w-32 h-32 md:h-20 object-cover rounded-xl border border-gray-200 cursor-pointer" onclick="window.openDetail('${item.id}')">
+                    
+                    <div class="flex-1 w-full">
+                        <div class="flex gap-2 text-[10px] font-bold mb-1">
+                            <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">${item.mainCat}</span>
+                        </div>
                         <h4 class="font-bold text-gray-900">${item.title}</h4>
-                        <p class="text-xs text-gray-500">โดย: ${item.name} | วันที่: ${date}</p>
+                        <p class="text-xs text-gray-500 mt-1">โดย: ${item.name} | ส่งเมื่อ: ${date}</p>
                     </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                        ${currentAdminState === 'pending' || currentAdminState === 'rejected' ? `<button onclick="window.updateStatus('${item.id}', 'approved')" class="flex-1 md:flex-none px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-sm font-semibold transition-colors">อนุมัติ</button>` : ''}
-                        ${currentAdminState === 'pending' || currentAdminState === 'approved' ? `<button onclick="window.updateStatus('${item.id}', 'rejected')" class="flex-1 md:flex-none px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-xl text-sm font-semibold transition-colors">ปฏิเสธ</button>` : ''}
-                        <button onclick="window.deleteRecord('${item.id}', '${item.imgPath}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto mt-2 md:mt-0">
+                        ${currentAdminState === 'pending' || currentAdminState === 'rejected' ? 
+                            `<button onclick="window.updateStatus('${item.id}', 'approved')" class="flex-1 md:flex-none px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-sm font-semibold transition-colors">อนุมัติ</button>` : ''}
+                        
+                        ${currentAdminState === 'pending' || currentAdminState === 'approved' ? 
+                            `<button onclick="window.updateStatus('${item.id}', 'rejected')" class="flex-1 md:flex-none px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-xl text-sm font-semibold transition-colors">ปฏิเสธ</button>` : ''}
+                        
+                        <button onclick="window.deleteRecord('${item.id}', '${item.imgPath}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm transition-colors" title="ลบทิ้งถาวร">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 </div>`;
             });
         };
 
         window.updateStatus = async (id, newStatus) => {
-            try { await updateDoc(doc(db, "certificates", id), { status: newStatus }); await fetchData(); } 
-            catch(e) { alert("เกิดข้อผิดพลาด"); }
+            try { 
+                await updateDoc(doc(db, "certificates", id), { status: newStatus }); 
+                window.showToast("อัปเดตสถานะสำเร็จ", 'success');
+                await fetchData(); 
+            } catch(e) { 
+                window.showToast("เกิดข้อผิดพลาดในการอัปเดต", 'error'); 
+            }
         };
 
         window.deleteRecord = async (id, path) => {
-            if(!confirm("ยืนยันการลบข้อมูลนี้ถาวร? (รูประบบก็จะหายไปด้วย)")) return;
+            if(!confirm("⚠️ ยืนยันการลบข้อมูลนี้ถาวร? (รูปภาพในระบบจะถูกลบไปด้วยและกู้คืนไม่ได้)")) return;
             try {
-                if(path) await deleteObject(ref(storage, path)).catch(()=>console.log("ไม่มีไฟล์ให้ลบ"));
+                if(path) {
+                    await deleteObject(ref(storage, path)).catch(() => console.log("อาจจะไม่มีไฟล์ให้ลบแล้ว"));
+                }
                 await deleteDoc(doc(db, "certificates", id));
+                window.showToast("ลบข้อมูลสำเร็จ", 'success');
                 await fetchData();
-            } catch(e) { alert("ลบไม่สำเร็จ"); }
+            } catch(e) { 
+                window.showToast("ลบไม่สำเร็จ กรุณาลองใหม่", 'error'); 
+            }
         };
 
         // --- MODALS ---
         window.openDetail = (id) => {
             const data = dbCache.find(i => i.id === id);
             if(!data) return;
+            
             document.getElementById('m-img').src = data.imgUrl;
             document.getElementById('m-maincat').innerText = data.mainCat;
             document.getElementById('m-subcat').innerText = data.subCat;
@@ -653,7 +879,7 @@
 
         window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
-        // Admin Management
+        // --- ADMIN SETTINGS MODAL ---
         window.toggleAdminModal = () => {
             const modal = document.getElementById('admin-modal');
             modal.classList.toggle('hidden');
@@ -667,7 +893,9 @@
                 ul.innerHTML += `
                 <li class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-lg text-sm border border-gray-100">
                     <span class="font-medium text-gray-700">${email}</span>
-                    ${email !== 'aceaa372@gmail.com' ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-[10px] text-gray-400">Master</span>'}
+                    ${email !== 'aceaa372@gmail.com' ? 
+                        `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>` : 
+                        '<span class="text-[10px] bg-black text-white px-2 py-0.5 rounded-full">Master</span>'}
                 </li>`;
             });
         }
@@ -678,6 +906,9 @@
             if(!adminEmails.includes(email)) {
                 adminEmails.push(email);
                 localStorage.setItem('ntun_admins', JSON.stringify(adminEmails));
+                window.showToast(`เพิ่มแอดมิน ${email} สำเร็จ`, 'success');
+            } else {
+                window.showToast("อีเมลนี้เป็นแอดมินอยู่แล้ว", 'error');
             }
             document.getElementById('new-admin-email').value = '';
             renderAdminListUI();
@@ -686,6 +917,7 @@
         window.removeAdmin = (email) => {
             adminEmails = adminEmails.filter(e => e !== email);
             localStorage.setItem('ntun_admins', JSON.stringify(adminEmails));
+            window.showToast(`ลบสิทธิ์แอดมิน ${email} แล้ว`, 'success');
             renderAdminListUI();
         };
 

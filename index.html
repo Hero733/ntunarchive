@@ -300,7 +300,6 @@
         let uploadedFile = null;
         let isListenerStarted = false;
         
-        // กำหนด Master Admin ตั้งต้น
         let adminEmails = ['aceaa372@gmail.com']; 
 
         const subCatData = {
@@ -367,16 +366,14 @@
             }
             isListenerStarted = true;
 
-            // 1. ดึงรายชื่อทีม Admin ออนไลน์แบบ Real-time จาก Firestore
             onSnapshot(collection(db, "admins"), (snapshot) => {
-                adminEmails = ['aceaa372@gmail.com']; // ตั้งต้นที่มาสเตอร์แอดมิน
+                adminEmails = ['aceaa372@gmail.com']; 
                 snapshot.forEach(doc => {
-                    adminEmails.push(doc.id.toLowerCase()); // ดึงอีเมลจาก doc id ที่บันทึกไว้
+                    adminEmails.push(doc.id.toLowerCase()); 
                 });
                 if (auth.currentUser) verifyUser(auth.currentUser);
             });
 
-            // 2. ดึงข้อมูลเกียรติบัตรแบบ Real-time ออนไลน์
             const q = query(collection(db, "certificates"), orderBy("createdAt", "desc"));
             onSnapshot(q, (snapshot) => {
                 dbCache = [];
@@ -386,10 +383,9 @@
                 window.renderGallery();
                 if(currentUser && currentUser.isAdmin) {
                     window.renderAdmin();
-                    if(!document.getElementById('admin-modal').classList.contains('hidden')) renderAdminListUI();
+                    if(!document.getElementById('admin-modal').classList.contains('hidden')) window.renderAdminListUI();
                 }
                 
-                // ซ่อนโหลดเดอร์เข้าหน้าแอปหลัก
                 loader.classList.add('opacity-0');
                 setTimeout(() => {
                     loader.classList.add('hidden');
@@ -441,7 +437,7 @@
                 el.classList.remove('dock-active'); el.classList.add('dock-inactive');
             });
             document.getElementById(`dock-${tab}`).classList.remove('dock-inactive');
-            document.getElementById(`dock-${tab}`).add('dock-active');
+            document.getElementById(`dock-${tab}`).classList.add('dock-active'); // แก้บั๊ก classList
             
             if(tab === 'admin') window.renderAdmin();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -467,7 +463,6 @@
             const sort = document.getElementById('sort-box').value;
             grid.innerHTML = '';
 
-            // 🏆 อัปเดตตัวนับจำนวนเกียรติบัตรที่ผ่านการอนุมัติแล้วออนไลน์
             const approvedItems = dbCache.filter(i => i.status === 'approved');
             document.getElementById('total-certs-count').innerText = approvedItems.length + " ใบ";
 
@@ -487,237 +482,289 @@
                 grid.innerHTML += `
                 <div onclick="window.openDetail('${item.id}')" class="bg-white rounded-[24px] p-3 apple-shadow apple-card-hover cursor-pointer border border-gray-100 flex flex-col group h-full">
                     <div class="w-full h-48 rounded-[18px] bg-gray-50 overflow-hidden relative mb-3">
-                        <img src="${item.imgUrl}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute top-2 left-2 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">${item.mainCat}</div>
+                        <img src="${item.imageUrl}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     </div>
-                    <div class="px-2 pb-2 flex-1 flex flex-col">
-                        <h4 class="font-bold text-gray-900 leading-tight mb-1 line-clamp-2">${item.title}</h4>
-                        <p class="text-xs text-gray-500 mt-auto"><i class="fa-solid fa-user-graduate mr-1 text-gray-400"></i> ${item.name}</p>
+                    <div class="px-1 flex flex-col flex-1">
+                        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md w-max mb-2">${item.subCat}</span>
+                        <h3 class="text-sm font-bold text-gray-800 line-clamp-2 leading-snug mb-1">${item.title}</h3>
+                        <p class="text-xs text-gray-500 mt-auto truncate"><i class="fa-solid fa-user-graduate mr-1"></i> ${item.name}</p>
                     </div>
                 </div>`;
             });
         };
 
-        // --- UPLOAD & COMPRESSION ---
+        // --- UPLOAD & FORMS ---
         window.updateSubcategories = () => {
-            const main = document.getElementById('f-maincat').value;
-            const sub = document.getElementById('f-subcat');
-            sub.innerHTML = '';
-            if(!main) { sub.innerHTML = '<option value="">-- เลือกหมวดหลักก่อน --</option>'; return; }
-            subCatData[main].forEach(s => sub.innerHTML += `<option value="${s}">${s}</option>`);
+            const mainCat = document.getElementById('f-maincat').value;
+            const subCatSelect = document.getElementById('f-subcat');
+            subCatSelect.innerHTML = '<option value="">-- เลือก --</option>';
+            if(mainCat && subCatData[mainCat]) {
+                subCatData[mainCat].forEach(sub => {
+                    subCatSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            }
         };
 
         window.handleImageSelect = (e) => {
             const file = e.target.files[0];
             if(!file) return;
-            if (file.size > 10 * 1024 * 1024) { window.showToast("ไฟล์รูปภาพใหญ่เกิน 10MB", 'error'); return; }
-
+            if(file.size > 10 * 1024 * 1024) { window.showToast('ไฟล์ใหญ่เกิน 10MB', 'error'); return; }
+            
             uploadedFile = file;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 document.getElementById('image-preview').src = ev.target.result;
                 document.getElementById('image-preview').classList.remove('hidden');
-                document.getElementById('remove-img-btn').classList.remove('hidden');
                 document.getElementById('dropzone-text').classList.add('hidden');
-                document.getElementById('dropzone').classList.remove('border-dashed', 'border-gray-300');
+                document.getElementById('remove-img-btn').classList.remove('hidden');
             };
             reader.readAsDataURL(file);
         };
 
         window.removeImage = (e) => {
-            e.stopPropagation(); uploadedFile = null; document.getElementById('file-input').value = "";
+            e.stopPropagation();
+            uploadedFile = null;
+            document.getElementById('file-input').value = '';
             document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('remove-img-btn').classList.add('hidden');
+            document.getElementById('image-preview').src = '';
             document.getElementById('dropzone-text').classList.remove('hidden');
-            document.getElementById('dropzone').classList.add('border-dashed', 'border-gray-300');
+            document.getElementById('remove-img-btn').classList.add('hidden');
         };
-
-        function compressImage(file, maxWidth, maxHeight, quality) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = event => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width, height = img.height;
-                        if (width > height && width > maxWidth) { height *= maxWidth / width; width = maxWidth; } 
-                        else if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
-                        canvas.width = width; canvas.height = height;
-                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        canvas.toBlob(blob => { resolve(new File([blob], file.name, { type: 'image/jpeg' })); }, 'image/jpeg', quality);
-                    };
-                };
-            });
-        }
 
         window.submitCertificate = async (e) => {
             e.preventDefault();
-            if(!uploadedFile) { window.showToast("กรุณาเลือกรูปภาพด้วยครับ!", 'error'); return; }
-
-            const btn = document.getElementById('btn-submit'), progressContainer = document.getElementById('upload-progress-container'), progressBar = document.getElementById('upload-progress-bar');
+            if(!uploadedFile) return window.showToast('กรุณาเลือกรูปภาพเกียรติบัตร', 'error');
             
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังเตรียมไฟล์...'; btn.disabled = true;
-            progressContainer.classList.remove('hidden'); progressBar.style.width = '0%';
-
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลด...';
+            
             try {
-                const compressedFile = await compressImage(uploadedFile, 1200, 1200, 0.7);
-                const ts = Date.now(), path = `certs/${ts}_${compressedFile.name}`;
-                const uploadTask = uploadBytesResumable(ref(storage, path), compressedFile);
-
+                const fileExt = uploadedFile.name.split('.').pop();
+                const fileName = `cert_${Date.now()}.${fileExt}`;
+                const storageRef = ref(storage, `certificates/${fileName}`);
+                const uploadTask = uploadBytesResumable(storageRef, uploadedFile);
+                
+                document.getElementById('upload-progress-container').classList.remove('hidden');
+                const progressBar = document.getElementById('upload-progress-bar');
+                
                 uploadTask.on('state_changed', 
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         progressBar.style.width = progress + '%';
-                        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> อัปโหลด ${Math.round(progress)}%`;
                     }, 
                     (error) => { throw error; }, 
                     async () => {
-                        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึกข้อมูล...';
-                        const url = await getDownloadURL(uploadTask.snapshot.ref);
-
-                        await addDoc(collection(db, "certificates"), {
-                            status: "pending", name: document.getElementById('f-name').value.trim(),
-                            mainCat: document.getElementById('f-maincat').value, subCat: document.getElementById('f-subcat').value,
-                            title: document.getElementById('f-title').value.trim(), desc: document.getElementById('f-desc').value.trim() || "-",
-                            imgUrl: url, imgPath: path, uploader: currentUser.email, createdAt: ts
-                        });
-
-                        window.showToast("ส่งผลงานเรียบร้อย! รอแอดมินตรวจสอบ", 'success');
-                        document.getElementById('upload-form').reset(); window.removeImage(new Event('click'));
-                        progressContainer.classList.add('hidden'); window.switchTab('gallery');
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                         
-                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ'; btn.disabled = false;
+                        await addDoc(collection(db, "certificates"), {
+                            imageUrl: downloadURL,
+                            storagePath: `certificates/${fileName}`,
+                            name: document.getElementById('f-name').value,
+                            mainCat: document.getElementById('f-maincat').value,
+                            subCat: document.getElementById('f-subcat').value,
+                            title: document.getElementById('f-title').value,
+                            desc: document.getElementById('f-desc').value,
+                            uploaderEmail: currentUser.email,
+                            status: 'pending',
+                            createdAt: Date.now()
+                        });
+                        
+                        window.showToast('ส่งข้อมูลสำเร็จ! รอแอดมินตรวจสอบ', 'success');
+                        e.target.reset();
+                        window.removeImage({stopPropagation: ()=>{}});
+                        document.getElementById('upload-progress-container').classList.add('hidden');
+                        progressBar.style.width = '0%';
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ';
+                        window.switchTab('gallery');
                     }
                 );
-            } catch(err) {
-                window.showToast("เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ (โปรดเปิดสิทธิ์ Firebase Rules)", 'error');
-                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ลองอีกครั้ง'; btn.disabled = false;
-                progressContainer.classList.add('hidden');
+            } catch (err) {
+                window.showToast('เกิดข้อผิดพลาดในการอัปโหลด', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ';
+                document.getElementById('upload-progress-container').classList.add('hidden');
             }
         };
 
-        // --- ADMIN AREA ---
+        // --- ADMIN FUNCTIONS ---
         window.setAdminTab = (tab) => {
             currentAdminState = tab;
             document.querySelectorAll('.admin-tab').forEach(el => {
-                el.classList.remove('border-amber-500','border-green-500','border-red-500','text-amber-600','text-green-600','text-red-600');
-                el.classList.add('border-transparent','text-gray-500');
+                el.classList.remove('text-amber-600', 'border-amber-500', 'text-green-600', 'border-green-500', 'text-gray-700', 'border-gray-500', 'text-red-600', 'border-red-500');
+                el.classList.add('text-gray-500', 'border-transparent');
             });
-            const active = document.getElementById(`tab-${tab}`);
-            if(tab==='pending') active.classList.add('border-amber-500','text-amber-600');
-            if(tab==='approved') active.classList.add('border-green-500','text-green-600');
-            if(tab==='rejected') active.classList.add('border-red-500','text-red-600');
+            
+            const activeTab = document.getElementById(`tab-${tab}`);
+            if(tab === 'pending') activeTab.classList.add('text-amber-600', 'border-amber-500');
+            if(tab === 'approved') activeTab.classList.add('text-green-600', 'border-green-500');
+            if(tab === 'rejected') activeTab.classList.add('text-red-600', 'border-red-500');
+            
             window.renderAdmin();
         };
 
         window.renderAdmin = () => {
-            const p = dbCache.filter(i=>i.status==='pending').length;
-            document.getElementById('badge-pending').innerText = p;
-            document.getElementById('badge-approved').innerText = dbCache.filter(i=>i.status==='approved').length;
-            document.getElementById('badge-rejected').innerText = dbCache.filter(i=>i.status==='rejected').length;
+            if(!currentUser || !currentUser.isAdmin) return;
             
-            const dot = document.getElementById('dock-admin-dot');
-            if(p > 0) dot.classList.remove('hidden'); else dot.classList.add('hidden');
-
-            const list = document.getElementById('admin-list'); list.innerHTML = '';
-            const items = dbCache.filter(i => i.status === currentAdminState);
-
-            if(items.length === 0) {
-                list.innerHTML = `<div class="text-center py-10 text-gray-400"><i class="fa-solid fa-folder-open text-4xl mb-3 opacity-30"></i><br>ไม่มีรายการในหมวดนี้</div>`;
-                return;
+            const pending = dbCache.filter(i => i.status === 'pending');
+            const approved = dbCache.filter(i => i.status === 'approved');
+            const rejected = dbCache.filter(i => i.status === 'rejected');
+            
+            document.getElementById('badge-pending').innerText = pending.length;
+            document.getElementById('badge-approved').innerText = approved.length;
+            document.getElementById('badge-rejected').innerText = rejected.length;
+            
+            if(pending.length > 0) {
+                document.getElementById('dock-admin-dot').classList.remove('hidden');
+            } else {
+                document.getElementById('dock-admin-dot').classList.add('hidden');
             }
 
+            let items = currentAdminState === 'pending' ? pending : (currentAdminState === 'approved' ? approved : rejected);
+            items.sort((a,b) => b.createdAt - a.createdAt);
+            
+            const list = document.getElementById('admin-list');
+            list.innerHTML = '';
+            
+            if(items.length === 0) {
+                list.innerHTML = `<div class="text-center py-12 text-gray-400">ไม่มีรายการในหมวดหมู่นี้</div>`;
+                return;
+            }
+            
             items.forEach(item => {
+                let buttons = '';
+                if(currentAdminState === 'pending') {
+                    buttons = `
+                        <button onclick="window.updateStatus('${item.id}', 'approved')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">อนุมัติ</button>
+                        <button onclick="window.updateStatus('${item.id}', 'rejected')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">ปฏิเสธ</button>
+                    `;
+                } else {
+                    buttons = `
+                        <button onclick="window.updateStatus('${item.id}', 'pending')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">นำกลับไปรอตรวจ</button>
+                        <button onclick="window.deleteItem('${item.id}', '${item.storagePath}')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    `;
+                }
+
                 list.innerHTML += `
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 apple-shadow flex flex-col md:flex-row gap-4 items-start md:items-center transition-all hover:border-gray-300">
-                    <img src="${item.imgUrl}" loading="lazy" class="w-full md:w-32 h-32 md:h-20 object-cover rounded-xl border border-gray-200 cursor-pointer" onclick="window.openDetail('${item.id}')">
-                    <div class="flex-1 w-full">
-                        <div class="flex gap-2 text-[10px] font-bold mb-1"><span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">${item.mainCat}</span></div>
-                        <h4 class="font-bold text-gray-900">${item.title}</h4>
-                        <p class="text-xs text-gray-500 mt-1">โดย: ${item.name}</p>
+                    <div class="bg-white p-4 rounded-[20px] apple-shadow border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <img src="${item.imageUrl}" class="w-24 h-24 object-cover rounded-xl bg-gray-50 cursor-pointer" onclick="window.openDetail('${item.id}')">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800">${item.title}</h4>
+                            <p class="text-sm text-gray-600"><i class="fa-solid fa-user-graduate mr-1"></i> ${item.name}</p>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full">${item.mainCat}</span>
+                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full">${item.subCat}</span>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-2">อัปโหลดโดย: ${item.uploaderEmail}</p>
+                        </div>
+                        <div class="flex sm:flex-col gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                            ${buttons}
+                        </div>
                     </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto mt-2 md:mt-0">
-                        ${currentAdminState === 'pending' || currentAdminState === 'rejected' ? 
-                            `<button onclick="window.updateStatus('${item.id}', 'approved')" class="flex-1 md:flex-none px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-sm font-semibold transition-colors">อนุมัติ</button>` : ''}
-                        ${currentAdminState === 'pending' || currentAdminState === 'approved' ? 
-                            `<button onclick="window.updateStatus('${item.id}', 'rejected')" class="flex-1 md:flex-none px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-xl text-sm font-semibold transition-colors">ปฏิเสธ</button>` : ''}
-                        <button onclick="window.deleteRecord('${item.id}', '${item.imgPath}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm transition-colors"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>`;
+                `;
             });
         };
 
-        window.updateStatus = async (id, newStatus) => {
-            try { await updateDoc(doc(db, "certificates", id), { status: newStatus }); window.showToast("อัปเดตสถานะสำเร็จ", 'success'); } 
-            catch(e) { window.showToast("เกิดข้อผิดพลาดในการอัปเดต", 'error'); }
-        };
-
-        window.deleteRecord = async (id, path) => {
-            if(!confirm("⚠️ ยืนยันการลบข้อมูลนี้ถาวร?")) return;
+        window.updateStatus = async (id, status) => {
             try {
-                if(path) await deleteObject(ref(storage, path)).catch(() => {});
+                await updateDoc(doc(db, "certificates", id), { status: status });
+                window.showToast('อัปเดตสถานะเรียบร้อย', 'success');
+            } catch(e) {
+                window.showToast('เกิดข้อผิดพลาดในการอัปเดต', 'error');
+            }
+        };
+
+        window.deleteItem = async (id, storagePath) => {
+            if(!confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้ถาวร?')) return;
+            try {
+                if(storagePath) {
+                    const desertRef = ref(storage, storagePath);
+                    await deleteObject(desertRef).catch(err => console.log('Image may not exist in storage', err));
+                }
                 await deleteDoc(doc(db, "certificates", id));
-                window.showToast("ลบข้อมูลสำเร็จ", 'success');
-            } catch(e) { window.showToast("ลบไม่สำเร็จ กรุณาลองใหม่", 'error'); }
+                window.showToast('ลบข้อมูลเรียบร้อย', 'success');
+            } catch(e) {
+                window.showToast('เกิดข้อผิดพลาดในการลบ', 'error');
+            }
         };
 
-        // --- MODALS ---
-        window.openDetail = (id) => {
-            const data = dbCache.find(i => i.id === id); if(!data) return;
-            document.getElementById('m-img').src = data.imgUrl;
-            document.getElementById('m-maincat').innerText = data.mainCat; document.getElementById('m-subcat').innerText = data.subCat;
-            document.getElementById('m-title').innerText = data.title; document.getElementById('m-name').innerText = data.name;
-            document.getElementById('m-desc').innerText = data.desc; document.getElementById('m-date').innerText = "อัปโหลด: " + new Date(data.createdAt).toLocaleDateString('th-TH');
-            document.getElementById('m-download').href = data.imgUrl;
-            document.getElementById('detail-modal').classList.remove('hidden');
-        };
-
-        window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
-
-        // --- ONLINE ADMIN SETTINGS (FIXED) ---
+        // --- ADMIN TEAM MANAGEMENT ---
         window.toggleAdminModal = () => {
-            const modal = document.getElementById('admin-modal'); modal.classList.toggle('hidden');
-            if(!modal.classList.contains('hidden')) renderAdminListUI();
+            const modal = document.getElementById('admin-modal');
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                window.renderAdminListUI();
+            } else {
+                modal.classList.add('hidden');
+            }
         };
 
-        function renderAdminListUI() {
-            const ul = document.getElementById('admin-list-ul'); ul.innerHTML = '';
+        window.renderAdminListUI = () => {
+            const ul = document.getElementById('admin-list-ul');
+            ul.innerHTML = '';
             adminEmails.forEach(email => {
+                const isMaster = email === 'aceaa372@gmail.com';
+                const delBtn = !isMaster ? `<button type="button" onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-xs text-gray-400 font-medium">Master</span>`;
                 ul.innerHTML += `
-                <li class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-lg text-sm border border-gray-100">
-                    <span class="font-medium text-gray-700">${email}</span>
-                    ${email !== 'aceaa372@gmail.com' ? 
-                        `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>` : 
-                        '<span class="text-[10px] bg-black text-white px-2 py-0.5 rounded-full">Master</span>'}
-                </li>`;
+                    <li class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                        <span class="text-sm text-gray-700">${email}</span>
+                        ${delBtn}
+                    </li>
+                `;
             });
-        }
+        };
 
         window.addAdmin = async (e) => {
-            e.preventDefault(); const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
-            if (email === 'aceaa372@gmail.com') { window.showToast("อีเมลนี้เป็นแอดมินหลักอยู่แล้ว", 'error'); return; }
-            
+            e.preventDefault();
+            const input = document.getElementById('new-admin-email');
+            const email = input.value.trim().toLowerCase();
+            if(!email) return;
             try {
-                // บันทึกลงฐานข้อมูลออนไลน์เพื่อให้ทุกเครื่องได้รับสิทธิ์ร่วมกัน
-                await setDoc(doc(db, "admins", email), { addedAt: Date.now() });
-                window.showToast(`เพิ่มแอดมิน ${email} บนคลังออนไลน์สำเร็จ`, 'success');
-                document.getElementById('new-admin-email').value = '';
-            } catch(e) {
-                window.showToast("ไม่สามารถเพิ่มสิทธิ์ได้ (กรุณาเปิด Firebase Rules)", 'error');
+                await setDoc(doc(db, "admins", email), { addedAt: Date.now(), addedBy: currentUser.email });
+                window.showToast('เพิ่มผู้ดูแลระบบแล้ว', 'success');
+                input.value = '';
+            } catch(err) {
+                window.showToast('เกิดข้อผิดพลาดในการเพิ่ม', 'error');
             }
         };
 
         window.removeAdmin = async (email) => {
-            if (email === 'aceaa372@gmail.com') return;
+            if(email === 'aceaa372@gmail.com') return;
+            if(!confirm(`ถอดถอนสิทธิ์ ${email} ออกจากการเป็นผู้ดูแลระบบ?`)) return;
             try {
                 await deleteDoc(doc(db, "admins", email));
-                window.showToast(`ลบสิทธิ์แอดมิน ${email} เรียบร้อยแล้ว`, 'success');
-            } catch(e) {
-                window.showToast("เกิดข้อผิดพลาดในการลบสิทธิ์แอดมิน", 'error');
+                window.showToast('ลบสิทธิ์ผู้ดูแลระบบแล้ว', 'success');
+            } catch(err) {
+                window.showToast('เกิดข้อผิดพลาดในการลบ', 'error');
             }
         };
+
+        // --- MODAL ---
+        window.openDetail = (id) => {
+            const item = dbCache.find(i => i.id === id);
+            if(!item) return;
+            
+            document.getElementById('m-img').src = item.imageUrl;
+            document.getElementById('m-maincat').innerText = item.mainCat;
+            document.getElementById('m-subcat').innerText = item.subCat;
+            document.getElementById('m-title').innerText = item.title;
+            document.getElementById('m-name').innerText = item.name;
+            document.getElementById('m-desc').innerText = item.desc || "ไม่มีรายละเอียดเพิ่มเติม";
+            
+            const date = new Date(item.createdAt);
+            document.getElementById('m-date').innerText = `อัปโหลดเมื่อ: ${date.toLocaleDateString('th-TH')} ${date.toLocaleTimeString('th-TH')}`;
+            document.getElementById('m-download').href = item.imageUrl;
+            
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeModal = () => {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
     </script>
 </body>
 </html>

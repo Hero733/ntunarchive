@@ -3,271 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NTUN Certificate Vault (Firebase Edition)</title>
+    <title>NTUN Vault - คลังเกียรติบัตรโรงเรียน</title>
     
-    <meta name="google-signin-client_id" content="594076056272-ic8smisk2j4kdhd8n4dmpf7vrul0p8hn.apps.googleusercontent.com">
+    <meta name="google-signin-client_id" content="802485672001-7tuhmifm1ph2mb09hle6r6hf0tahu9gv.apps.googleusercontent.com">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
         tailwind.config = {
-            theme: { extend: { fontFamily: { sans: ['Inter', 'Anuphan', 'sans-serif'], } } }
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'Anuphan', 'sans-serif'], },
+                    colors: { apple: { gray: '#f5f5f7', dark: '#1d1d1f', blue: '#0066cc' } }
+                } 
+            }
         }
     </script>
 
     <style>
-        body { background-color: #f5f5f7; color: #1d1d1f; overflow-x: hidden; }
-        .blur-backdrop { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .dock-container { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        .dock-item { transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
-        .dock-item:hover { transform: scale(1.3) translateY(-10px); }
-        .apple-shadow { box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02); }
-        .apple-shadow-hover { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .apple-shadow-hover:hover { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06); transform: translateY(-4px); }
-        .shimmer {
-            background: linear-gradient(90deg, #eff1f3 4%, #e2e8f0 25%, #eff1f3 36%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        body { background-color: #f5f5f7; color: #1d1d1f; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        
+        /* Glassmorphism */
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
+        .glass-dark { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        
+        /* Soft Shadows */
+        .apple-shadow { box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); }
+        .apple-card-hover { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .apple-card-hover:hover { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); transform: translateY(-4px); }
+        
+        /* macOS Dock */
+        .dock-container { padding: 10px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.4); display: flex; gap: 12px; }
+        .dock-item { width: 56px; height: 56px; border-radius: 20px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); }
+        .dock-item:hover { transform: scale(1.3) translateY(-12px); z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .dock-active { background: linear-gradient(135deg, #007AFF, #0056b3); color: white; border: none; }
+        .dock-inactive { background: white; color: #555; }
+        
+        /* Modals & Animations */
+        .modal-enter { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Loader */
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #007AFF; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
-    <div id="loading-screen" class="fixed inset-0 bg-[#f5f5f7] z-50 flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out">
-        <div class="relative flex flex-col items-center">
-            <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <h1 class="mt-6 text-xl font-medium tracking-tight text-gray-500 animate-pulse">NTUN Vault</h1>
-            <p id="loading-text" class="text-xs text-gray-400 mt-2">กำลังเชื่อมต่อ Firebase...</p>
-        </div>
+    <div id="loader" class="fixed inset-0 bg-[#f5f5f7] z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="spinner mb-6"></div>
+        <h1 class="text-2xl font-semibold tracking-tight text-gray-800">NTUN Vault</h1>
+        <p class="text-sm text-gray-500 mt-2">กำลังเตรียมพื้นที่จัดเก็บ...</p>
     </div>
 
-    <div id="login-screen" class="hidden min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-[#f5f5f7] to-[#e8e8ed]">
-        <div class="w-full max-w-md bg-white/80 blur-backdrop p-10 rounded-3xl border border-white/50 apple-shadow text-center">
-            <div class="w-20 h-20 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-blue-500/30 mb-6">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 mb-2">เข้าสู่ระบบเกียรติบัตร</h2>
-            <p class="text-gray-500 text-sm mb-8 leading-relaxed">เฉพาะบุคลากรและนักเรียนที่มีอีเมล <span class="font-semibold text-blue-600">@ntun.ac.th</span> หรือสิทธิ์แอดมินกลางที่ได้รับอนุญาต</p>
-            
-            <div class="flex flex-col items-center justify-center">
-                <button onclick="window.loginWithGoogle()" class="w-full max-w-[280px] bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 border border-gray-200 rounded-full shadow-sm flex items-center justify-center space-x-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.227C18.216 1.414 15.48 0 12.24 0 5.577 0 0 5.377 0 12s5.577 12 12.24 12c6.96 0 11.57-4.834 11.57-11.743 0-.79-.085-1.389-.19-1.972H12.24z"/>
-                    </svg>
-                    <span class="text-sm font-semibold tracking-tight text-gray-600">Sign in with Google</span>
-                </button>
-            </div>
-            <div class="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-400">
-                <i class="fa-solid fa-fire mr-1 text-orange-500"></i> ระบบฐานข้อมูลทำงานด้วย Firebase
-            </div>
-        </div>
-    </div>
-
-    <div id="app-container" class="hidden min-h-screen pb-32">
+    <div id="login-view" class="hidden min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 2s;"></div>
         
-        <header class="sticky top-0 z-40 bg-[#f5f5f7]/80 blur-backdrop border-b border-gray-200/50 px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <span class="text-lg font-bold tracking-tight text-gray-900"><i class="fa-solid fa-ribbon text-blue-600 mr-2"></i>NTUN Vault</span>
-                <span id="user-badge" class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200/50">Student</span>
+        <div class="glass p-10 md:p-14 rounded-[40px] max-w-md w-full text-center apple-shadow border border-white z-10">
+            <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[28px] mx-auto flex items-center justify-center text-white text-4xl shadow-xl shadow-blue-500/30 mb-8 transform rotate-3 hover:rotate-0 transition-transform">
+                <i class="fa-solid fa-award"></i>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="text-right hidden sm:block">
-                    <p id="user-name" class="text-sm font-medium text-gray-800">Loading User...</p>
-                    <p id="user-email" class="text-xs text-gray-400">user@ntun.ac.th</p>
+            <h2 class="text-3xl font-bold tracking-tight mb-3">คลังเกียรติบัตร</h2>
+            <p class="text-gray-500 text-sm mb-8 leading-relaxed">กรุณาเข้าสู่ระบบด้วยอีเมลของโรงเรียน<br><span class="font-semibold text-blue-600">@ntun.ac.th</span> หรืออีเมลผู้ดูแลระบบ</p>
+            
+            <button onclick="window.login()" class="w-full bg-white hover:bg-gray-50 text-gray-800 font-medium py-3.5 px-4 rounded-full apple-shadow border border-gray-100 flex items-center justify-center space-x-3 transition-transform active:scale-95">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                <span>ดำเนินการต่อด้วย Google</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="app-view" class="hidden min-h-screen pb-32">
+        
+        <header class="sticky top-0 z-40 glass border-b border-gray-200/50 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-n"></i></div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight leading-none">NTUN</h1>
+                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-widest mt-0.5">Certificate Vault</p>
                 </div>
-                <button onclick="window.logout()" class="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors duration-300 shadow-sm cursor-pointer">
-                    <i class="fa-solid fa-power-off text-sm"></i>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:block text-right">
+                    <p id="user-name" class="text-sm font-semibold text-gray-900">Name</p>
+                    <span id="user-role" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase tracking-wider">Student</span>
+                </div>
+                <button onclick="window.logout()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-600 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </button>
             </div>
         </header>
 
-        <main id="view-gallery" class="max-w-7xl mx-auto px-6 pt-10 section-view">
-            <div class="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+        <main id="section-gallery" class="app-section max-w-7xl mx-auto px-4 sm:px-6 pt-10 fade-in">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
-                    <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">คลังเกียรติบัตรรวม</h1>
-                    <p class="text-gray-500 mt-2">ค้นหา จัดหมวดหมู่ และชื่นชมผลงานความสำเร็จของพวกเราชาว NTUN</p>
+                    <h2 class="text-4xl sm:text-5xl font-bold tracking-tight mb-2">หอเกียรติยศ</h2>
+                    <p class="text-gray-500 text-lg">รวบรวมความภาคภูมิใจของพวกเรา</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="relative w-full sm:w-64">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="search-input" oninput="window.filterCertificates()" placeholder="ค้นหาชื่อ หรือรางวัล..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div class="relative w-full sm:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="search-box" oninput="window.renderGallery()" placeholder="ค้นหาชื่อ, หมวดหมู่, งานแข่ง..." class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all apple-shadow text-sm">
                     </div>
-                    <select id="sort-select" onchange="window.filterCertificates()" class="px-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                        <option value="newest">อัปโหลดใหม่ล่าสุด</option>
-                        <option value="oldest">เก่าที่สุด</option>
+                    <select id="sort-box" onchange="window.renderGallery()" class="px-4 py-3 bg-white border border-gray-200 rounded-2xl outline-none apple-shadow text-sm font-medium cursor-pointer">
+                        <option value="new">มาใหม่ล่าสุด</option>
+                        <option value="old">เก่าที่สุด</option>
                     </select>
                 </div>
             </div>
 
-            <div class="mb-8 overflow-x-auto py-2 flex items-center space-x-2 no-scrollbar">
-                <button onclick="window.selectCategory('all', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gray-900 text-white shadow-sm cursor-pointer">ทั้งหมด</button>
-                <button onclick="window.selectCategory('คณิตศาสตร์', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">คณิตศาสตร์</button>
-                <button onclick="window.selectCategory('วิทยาศาสตร์', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">วิทยาศาสตร์</button>
-                <button onclick="window.selectCategory('ภาษา', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">ภาษา</button>
-                <button onclick="window.selectCategory('เทคโนโลยี', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">เทคโนโลยี</button>
-                <button onclick="window.selectCategory('อื่นๆ', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">อื่นๆ</button>
-            </div>
+            <div class="flex overflow-x-auto gap-2 pb-4 mb-6 no-scrollbar" id="category-filters">
+                </div>
 
-            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                </div>
             
-            <div id="gallery-empty" class="hidden text-center py-20">
-                <i class="fa-solid fa-folder-open text-5xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500 font-medium">ยังไม่มีข้อมูลเกียรติบัตรในหมวดหมู่นี้</p>
+            <div id="gallery-empty" class="hidden text-center py-24 text-gray-400">
+                <i class="fa-solid fa-box-open text-6xl mb-4 opacity-50"></i>
+                <h3 class="text-xl font-medium text-gray-600">ไม่มีเกียรติบัตรในหมวดหมู่นี้</h3>
             </div>
         </main>
 
-        <main id="view-upload" class="max-w-3xl mx-auto px-6 pt-10 section-view hidden">
-            <div class="mb-10 text-center">
-                <h1 class="text-4xl font-extrabold tracking-tight">เพิ่มเกียรติบัตร</h1>
-                <p class="text-gray-500 mt-2">อัปโหลดเกียรติบัตรของคุณเข้าสู่คลังข้อมูล ระบบจะส่งให้แอดมินตรวจสอบ</p>
+        <main id="section-upload" class="app-section hidden max-w-3xl mx-auto px-4 sm:px-6 pt-10 fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-4xl font-bold tracking-tight mb-2">เพิ่มผลงาน</h2>
+                <p class="text-gray-500">บันทึกเกียรติบัตรของคุณเข้าสู่ระบบ (ต้องรอผู้บริหารอนุมัติ)</p>
             </div>
 
-            <form id="upload-form" onsubmit="window.handleUpload(event)" class="bg-white p-8 sm:p-10 rounded-3xl border border-gray-200/60 apple-shadow space-y-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">รูปภาพเกียรติบัตร</label>
-                    <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-gray-200 hover:border-blue-500 rounded-2xl p-8 text-center cursor-pointer bg-gray-50/50 hover:bg-blue-50/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[220px]">
-                        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="window.previewImage(event)">
-                        <div id="upload-prompt" class="space-y-3">
-                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400"></i>
-                            <p class="text-sm font-medium text-gray-600">คลิกเพื่อเลือกไฟล์รูปภาพ</p>
+            <form id="upload-form" onsubmit="window.submitCertificate(event)" class="bg-white p-6 sm:p-10 rounded-[32px] apple-shadow border border-gray-100 space-y-6">
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">รูปภาพเกียรติบัตร (สแกนหรือถ่ายให้ชัดเจน)</label>
+                    <div id="dropzone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-gray-300 rounded-[24px] p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-colors h-64 flex flex-col justify-center items-center relative overflow-hidden group">
+                        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="window.handleImageSelect(event)">
+                        
+                        <div id="dropzone-text" class="space-y-3">
+                            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mx-auto group-hover:scale-110 transition-transform"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <p class="font-medium text-gray-700">แตะเพื่อเลือกรูปภาพ</p>
                         </div>
-                        <div id="upload-preview-container" class="hidden w-full relative">
-                            <img id="upload-preview" src="#" alt="Preview Data" class="max-h-52 mx-auto rounded-xl shadow-md border">
-                            <button type="button" onclick="window.removeSelectedFile(event)" class="absolute top-2 right-2 bg-black/70 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs hover:bg-black"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
+                        
+                        <img id="image-preview" src="" class="hidden absolute inset-0 w-full h-full object-cover">
+                        <div id="remove-img-btn" onclick="window.removeImage(event)" class="hidden absolute top-4 right-4 w-8 h-8 bg-black/60 text-white rounded-full items-center justify-center hover:bg-black transition-colors z-10"><i class="fa-solid fa-times"></i></div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล ผู้ได้รับรางวัล</label>
-                    <input type="text" id="input-name" required placeholder="นายคูณทรัพย์ เพชรวิชิต" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล ผู้แข่งขัน</label>
+                    <input type="text" id="f-name" required placeholder="เช่น นายคูณทรัพย์ เพชรวิชิต" class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">หมวดวิชา</label>
-                        <select id="main-category" onchange="window.updateSubCategories()" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                            <option value="">-- เลือกหมวดหมู่ --</option>
-                            <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">หมวดวิชาหลัก</label>
+                        <select id="f-maincat" required onchange="window.updateSubcategories()" class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <option value="">-- เลือก --</option>
                             <option value="วิทยาศาสตร์">วิทยาศาสตร์</option>
-                            <option value="ภาษา">ภาษา</option>
-                            <option value="เทคโนโลยี">เทคโนโลยี</option>
+                            <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                            <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                            <option value="ภาษาไทย">ภาษาไทย</option>
+                            <option value="สังคมศึกษา">สังคมศึกษา</option>
+                            <option value="ศิลปะ/ดนตรี">ศิลปะ/ดนตรี</option>
+                            <option value="การงาน/คอมพิวเตอร์">การงาน/คอมพิวเตอร์</option>
+                            <option value="สุขศึกษา/กีฬา">สุขศึกษา/กีฬา</option>
                             <option value="อื่นๆ">อื่นๆ</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">รายการแข่งขัน</label>
-                        <select id="sub-category" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                            <option value="">-- เลือกหมวดวิชาก่อน --</option>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">หมวดย่อย</label>
+                        <select id="f-subcat" required class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <option value="">-- เลือกหมวดหลักก่อน --</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อรางวัลที่ได้รับ</label>
-                    <input type="text" id="input-title" required placeholder="รางวัลชนะเลิศอันดับ 1 ฟิสิกส์สัประยุทธ์" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อรางวัล / รายการแข่งขัน (แบบย่อ)</label>
+                    <input type="text" id="f-title" required placeholder="เช่น เหรียญทองแดง ฟิสิกส์โอลิมปิก" class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    <span>บันทึกข้อมูลเข้าระบบ</span>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
+                    <textarea id="f-desc" rows="3" placeholder="อธิบายเพิ่มเติมเกี่ยวกับการแข่งครั้งนี้ (สถานที่, วันที่, ความรู้สึก...)" class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"></textarea>
+                </div>
+
+                <button type="submit" id="btn-submit" class="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 rounded-2xl transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ
                 </button>
             </form>
         </main>
 
-        <main id="view-admin" class="max-w-7xl mx-auto px-6 pt-10 section-view hidden">
-            <div class="mb-10 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <main id="section-admin" class="app-section hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                    <h1 class="text-4xl font-extrabold tracking-tight">จัดการข้อมูล (Admin)</h1>
+                    <h2 class="text-4xl font-bold tracking-tight mb-2 text-indigo-900">Admin Console</h2>
+                    <p class="text-gray-500">ระบบคัดกรองและจัดการเกียรติบัตร</p>
                 </div>
-                <button onclick="window.toggleAdminManagerModal()" class="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full shadow-md cursor-pointer">
-                    <i class="fa-solid fa-user-gear mr-2"></i>จัดการแอดมิน
+                <button onclick="window.toggleAdminModal()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-medium px-5 py-2.5 rounded-full transition-colors flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-user-shield"></i> จัดการทีม Admin
                 </button>
             </div>
 
-            <div class="border-b border-gray-200 mb-8 flex space-x-6">
-                <button onclick="window.switchAdminTab('pending')" id="tab-btn-pending" class="pb-4 px-2 text-blue-600 border-b-2 border-blue-600 text-sm font-semibold flex items-center gap-2 cursor-pointer">
-                    รอตรวจสอบ <span id="badge-pending-count" class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">0</span>
+            <div class="flex gap-4 border-b border-gray-200 mb-6 overflow-x-auto no-scrollbar">
+                <button onclick="window.setAdminTab('pending')" id="tab-pending" class="admin-tab pb-4 px-2 font-semibold text-amber-600 border-b-2 border-amber-500 whitespace-nowrap">
+                    <i class="fa-solid fa-hourglass-half mr-1"></i> รอตรวจ <span id="badge-pending" class="ml-1 bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs">0</span>
                 </button>
-                <button onclick="window.switchAdminTab('approved')" id="tab-btn-approved" class="pb-4 px-2 text-gray-500 border-b-2 border-transparent text-sm font-medium flex items-center gap-2 cursor-pointer">
-                    อนุมัติแล้ว <span id="badge-approved-count" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
+                <button onclick="window.setAdminTab('approved')" id="tab-approved" class="admin-tab pb-4 px-2 font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 whitespace-nowrap">
+                    <i class="fa-solid fa-check-circle mr-1"></i> ผ่านแล้ว <span id="badge-approved" class="ml-1 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
                 </button>
-                <button onclick="window.switchAdminTab('rejected')" id="tab-btn-rejected" class="pb-4 px-2 text-gray-500 border-b-2 border-transparent text-sm font-medium flex items-center gap-2 cursor-pointer">
-                    ไม่อนุมัติ <span id="badge-rejected-count" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
+                <button onclick="window.setAdminTab('rejected')" id="tab-rejected" class="admin-tab pb-4 px-2 font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 whitespace-nowrap">
+                    <i class="fa-solid fa-times-circle mr-1"></i> ไม่ผ่าน <span id="badge-rejected" class="ml-1 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
                 </button>
             </div>
 
-            <div id="admin-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-            <div id="admin-empty" class="hidden text-center py-16 text-gray-400">
-                <i class="fa-solid fa-circle-check text-4xl mb-3 text-green-500"></i>
-                <p>ไม่มีรายการค้างในหน้านี้</p>
-            </div>
+            <div id="admin-list" class="space-y-4">
+                </div>
         </main>
 
-        <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
-            <div class="bg-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[85vh]">
-                <div class="md:w-1/2 bg-gray-900 flex items-center justify-center p-4 relative">
-                    <img id="modal-img" src="#" alt="Certificate" class="max-w-full max-h-[70vh] object-contain rounded-lg">
-                </div>
-                <div class="md:w-1/2 p-8 flex flex-col justify-between bg-white overflow-y-auto">
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-start">
-                            <span id="modal-tag" class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-600 font-medium text-xs rounded-full">Category</span>
-                            <button onclick="window.closeModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        <h3 id="modal-title" class="text-2xl font-bold text-gray-900">Certificate Name</h3>
-                        <div class="pt-2 space-y-2 text-sm text-gray-600">
-                            <p class="flex items-center"><i class="fa-solid fa-user w-6 text-gray-400"></i> <strong class="text-gray-900 mr-2">ผู้ได้รับ:</strong> <span id="modal-author">Author</span></p>
-                            <p class="flex items-center"><i class="fa-solid fa-folder-tree w-6 text-gray-400"></i> <strong class="text-gray-900 mr-2">หมวดย่อย:</strong> <span id="modal-sub">Subcategory</span></p>
-                        </div>
-                    </div>
-                    <div class="pt-6 border-t border-gray-100">
-                        <a id="modal-download-link" target="_blank" href="#" download class="w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> เปิดรูปภาพเต็ม
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="admin-manager-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold"><i class="fa-solid fa-users-gear mr-2 text-blue-600"></i> จัดการทีมแอดมิน</h3>
-                    <button onclick="window.toggleAdminManagerModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="space-y-4">
-                    <form onsubmit="window.handleAddAdmin(event)" class="flex gap-2">
-                        <input type="email" id="new-admin-email" required placeholder="ใส่อีเมลแอดมินใหม่..." class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none">
-                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-xl">เพิ่ม</button>
-                    </form>
-                    <div class="border-t border-gray-100 pt-4">
-                        <ul id="admin-emails-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-            <div class="dock-container bg-white/70 blur-backdrop px-4 py-3 rounded-3xl flex items-center space-x-4 shadow-xl border border-white/50">
-                <button onclick="window.switchView('gallery')" id="dock-item-gallery" class="dock-item w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center text-lg shadow-md">
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+            <div class="glass dock-container apple-shadow">
+                <div onclick="window.switchTab('gallery')" id="dock-gallery" class="dock-item dock-active" title="หอเกียรติยศ">
                     <i class="fa-solid fa-images"></i>
-                </button>
-                <button onclick="window.switchView('upload')" id="dock-item-upload" class="dock-item w-12 h-12 rounded-2xl bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center text-lg border border-gray-200/60 shadow-sm cursor-pointer">
-                    <i class="fa-solid fa-circle-plus"></i>
-                </button>
-                <button onclick="window.switchView('admin')" id="dock-item-admin" class="dock-item hidden w-12 h-12 rounded-2xl bg-white text-gray-700 hover:bg-gray-50 flex items-center justify-center text-lg border border-gray-200/60 shadow-sm cursor-pointer relative">
-                    <i class="fa-solid fa-user-shield text-amber-500"></i>
-                    <span id="dock-admin-badge" class="hidden absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-white animate-pulse"></span>
-                </button>
+                </div>
+                <div onclick="window.switchTab('upload')" id="dock-upload" class="dock-item dock-inactive" title="เพิ่มเกียรติบัตร">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <div onclick="window.switchTab('admin')" id="dock-admin" class="dock-item dock-inactive hidden relative" title="จัดการระบบ">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span id="dock-admin-dot" class="hidden absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="detail-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 glass-dark" onclick="window.closeModal()"></div>
+        <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-[32px] overflow-hidden flex flex-col md:flex-row relative z-10 modal-enter apple-shadow">
+            
+            <button onclick="window.closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center z-20 transition-colors">
+                <i class="fa-solid fa-times text-gray-600"></i>
+            </button>
+
+            <div class="md:w-[55%] bg-gray-100 flex items-center justify-center p-4 relative min-h-[300px]">
+                <img id="m-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg drop-shadow-lg">
+            </div>
+            
+            <div class="md:w-[45%] p-8 flex flex-col justify-between overflow-y-auto">
+                <div>
+                    <div class="flex gap-2 mb-4">
+                        <span id="m-maincat" class="px-3 py-1 bg-black text-white text-[11px] font-bold uppercase tracking-wider rounded-full">CAT</span>
+                        <span id="m-subcat" class="px-3 py-1 bg-gray-100 text-gray-600 text-[11px] font-bold uppercase tracking-wider rounded-full border">SUB</span>
+                    </div>
+                    <h3 id="m-title" class="text-2xl font-bold leading-snug mb-1">Title</h3>
+                    <p class="text-gray-500 text-sm mb-6"><i class="fa-solid fa-user-graduate mr-1"></i> <span id="m-name">Name</span></p>
+                    
+                    <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 mb-6">
+                        <h4 class="text-xs font-bold text-blue-800 uppercase tracking-wide mb-2"><i class="fa-solid fa-circle-info mr-1"></i> รายละเอียด</h4>
+                        <p id="m-desc" class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">Desc</p>
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-100 text-xs text-gray-400 flex justify-between items-center">
+                    <span id="m-date">Date</span>
+                    <a id="m-download" href="#" target="_blank" class="text-blue-600 font-semibold hover:underline flex items-center gap-1">
+                        ดาวน์โหลดภาพ <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+
+    <div id="admin-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 glass-dark" onclick="window.toggleAdminModal()"></div>
+        <div class="bg-white w-full max-w-md rounded-[32px] p-8 relative z-10 modal-enter apple-shadow">
+            <h3 class="text-xl font-bold mb-4">ตั้งค่าแอดมิน</h3>
+            <p class="text-sm text-gray-500 mb-4">เพิ่มหรือลบสิทธิ์ผู้ดูแลระบบ (ต้องใช้อีเมล Google)</p>
+            
+            <form onsubmit="window.addAdmin(event)" class="flex gap-2 mb-6">
+                <input type="email" id="new-admin-email" required placeholder="อีเมลใหม่..." class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm">
+                <button type="submit" class="bg-black text-white px-4 rounded-xl text-sm font-semibold">เพิ่ม</button>
+            </form>
+            
+            <ul id="admin-list-ul" class="space-y-2 border-t border-gray-100 pt-4 max-h-48 overflow-y-auto pr-2 no-scrollbar">
+                </ul>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -275,360 +306,393 @@
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-        // 1. Config ของคุณ
+        // Config ของคุณ (ntunspace)
         const firebaseConfig = {
-            apiKey: "AIzaSyCWlvcyFx7X90MQvkuFTqS9Dq-ylyKb8ok",
-            authDomain: "ntunarchive.firebaseapp.com",
-            projectId: "ntunarchive",
-            storageBucket: "ntunarchive.firebasestorage.app",
-            messagingSenderId: "594076056272",
-            appId: "1:594076056272:web:b1e02dd8932b3cb4f23cd5",
-            measurementId: "G-LJJME2SNKF"
+            apiKey: "AIzaSyAlaTyhtXf-d6qDSD5AeWR33Hg3VCn55o8",
+            authDomain: "ntunspace.firebaseapp.com",
+            projectId: "ntunspace",
+            storageBucket: "ntunspace.firebasestorage.app",
+            messagingSenderId: "952526844615",
+            appId: "1:952526844615:web:d1f78ba8e3b44c24ee84e2",
+            measurementId: "G-33DZ6EX79H"
         };
 
-        // 2. เริ่มต้น Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // 3. ตัวแปรสถานะ
+        // State Management
         let currentUser = null;
-        let activeCategory = 'all';
-        let currentAdminTab = 'pending';
-        let certificatesDatabaseCache = [];
+        let dbCache = [];
+        let activeCatFilter = 'ทั้งหมด';
+        let currentAdminState = 'pending';
+        let uploadedFile = null;
 
-        // รายชื่อแอดมินหลัก
-        let superAdminsList = ['aceaa372@gmail.com']; 
-        if(localStorage.getItem('ntun_vault_admins')) {
-            try { superAdminsList = JSON.parse(localStorage.getItem('ntun_vault_admins')); } catch(e) {}
+        // รายการแอดมินเริ่มต้น (ดึง/บันทึก ลง LocalStorage ชั่วคราว ถ้าจะให้ดีสุดต้องเก็บใน Firestore ด้วย)
+        let adminEmails = ['aceaa372@gmail.com'];
+        if(localStorage.getItem('ntun_admins')) {
+            try { adminEmails = JSON.parse(localStorage.getItem('ntun_admins')); } catch(e){}
         }
 
-        const subCategoryMatrix = {
-            'คณิตศาสตร์': ['โอลิมปิกวิชาการ', 'ศิลปหัตถกรรม', 'คิดเลขเร็ว', 'อื่นๆ'],
-            'วิทยาศาสตร์': ['ฟิสิกส์', 'เคมี', 'ชีววิทยา', 'ดาราศาสตร์', 'โครงงาน'],
-            'ภาษา': ['อังกฤษ', 'ไทย', 'จีน', 'ญี่ปุ่น'],
-            'เทคโนโลยี': ['เขียนโปรแกรม', 'หุ่นยนต์', 'กราฟิก', 'โครงงานคอม'],
-            'อื่นๆ': ['ดนตรี', 'กีฬา', 'คุณธรรม']
+        // หมวดย่อยแบบเจาะจง
+        const subCatData = {
+            "วิทยาศาสตร์": ["ฟิสิกส์", "เคมี", "ชีววิทยา", "ดาราศาสตร์", "โครงงานวิทยาศาสตร์", "อื่นๆ"],
+            "คณิตศาสตร์": ["โอลิมปิกวิชาการ", "คิดเลขเร็ว", "แก้ปัญหาคณิต", "อื่นๆ"],
+            "ภาษาต่างประเทศ": ["อังกฤษ", "จีน", "ญี่ปุ่น", "ฝรั่งเศส", "อื่นๆ"],
+            "ภาษาไทย": ["เรียงความ", "สุนทรพจน์", "แต่งกลอน", "อื่นๆ"],
+            "สังคมศึกษา": ["ตอบปัญหาประวัติศาสตร์", "มารยาทไทย", "อื่นๆ"],
+            "ศิลปะ/ดนตรี": ["วาดภาพ", "ร้องเพลง", "วงโยธวาทิต", "อื่นๆ"],
+            "การงาน/คอมพิวเตอร์": ["เขียนโปรแกรม (Coding)", "หุ่นยนต์", "ตัดต่อวิดีโอ", "ทำอาหาร", "อื่นๆ"],
+            "สุขศึกษา/กีฬา": ["ฟุตบอล", "วอลเลย์บอล", "กรีฑา", "เปตอง", "อื่นๆ"],
+            "อื่นๆ": ["กิจกรรมเพื่อสังคม", "คุณธรรมจริยธรรม", "ทั่วไป"]
         };
 
-        // --- ระบบล็อกอิน ---
+        const loader = document.getElementById('loader');
+        const loginView = document.getElementById('login-view');
+        const appView = document.getElementById('app-view');
+
+        // --- AUTHENTICATION ---
         onAuthStateChanged(auth, (user) => {
-            const loader = document.getElementById('loading-screen');
-            if (user) {
-                verifyAndProcessUser(user);
-            } else {
-                loader.classList.add('opacity-0');
-                setTimeout(() => { loader.style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }, 500);
-            }
+            if (user) verifyUser(user);
+            else showLogin();
         });
 
-        window.loginWithGoogle = () => {
+        window.login = () => {
             const provider = new GoogleAuthProvider();
-            document.getElementById('loading-screen').style.display = 'flex';
-            document.getElementById('loading-screen').classList.remove('opacity-0');
-            
-            signInWithPopup(auth, provider).catch((error) => {
-                alert('เกิดข้อผิดพลาด: ' + error.message);
-                document.getElementById('loading-screen').classList.add('opacity-0');
-            });
+            signInWithPopup(auth, provider).catch(err => alert("ล็อกอินไม่สำเร็จ: " + err.message));
         };
 
-        window.logout = () => signOut(auth).then(() => window.location.reload());
+        window.logout = () => signOut(auth);
 
-        function verifyAndProcessUser(user) {
+        function showLogin() {
+            loader.classList.add('opacity-0');
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                appView.classList.add('hidden');
+                loginView.classList.add('fade-in');
+            }, 500);
+        }
+
+        function verifyUser(user) {
             const email = user.email.toLowerCase();
-            // ตรวจสอบโดเมน (อนุญาตแค่ @ntun.ac.th และอีเมลแอดมิน)
-            const isNtunDomain = email.endsWith('@ntun.ac.th'); 
-            const isSuperAdmin = superAdminsList.includes(email); 
+            const isStudent = email.endsWith('@ntun.ac.th');
+            const isAdmin = adminEmails.includes(email);
 
-            if (!isNtunDomain && !isSuperAdmin) {
-                alert('ไม่อนุญาตให้เข้าถึง: ต้องใช้อีเมล @ntun.ac.th หรืออีเมลแอดมินเท่านั้น');
-                window.logout();
+            if (!isStudent && !isAdmin) {
+                alert("จำกัดสิทธิ์เฉพาะอีเมล @ntun.ac.th หรือแอดมินเท่านั้น");
+                signOut(auth);
                 return;
             }
 
-            currentUser = { uid: user.uid, name: user.displayName || user.email, email: email, isAdmin: isSuperAdmin };
-            setupDashboard();
-        }
-
-        function setupDashboard() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').classList.remove('hidden');
-
+            currentUser = { name: user.displayName || email, email: email, isAdmin: isAdmin };
             document.getElementById('user-name').innerText = currentUser.name;
-            document.getElementById('user-email').innerText = currentUser.email;
             
-            const badge = document.getElementById('user-badge');
-            if (currentUser.isAdmin) {
-                badge.innerText = "แอดมิน";
-                badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800 border border-amber-200";
-                document.getElementById('dock-item-admin').classList.remove('hidden');
-            } else {
-                badge.innerText = "นักเรียน";
-                badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200";
-                document.getElementById('dock-item-admin').classList.add('hidden');
+            if(isAdmin) {
+                document.getElementById('user-role').innerText = 'ADMIN';
+                document.getElementById('user-role').classList.replace('bg-blue-100', 'bg-amber-100');
+                document.getElementById('user-role').classList.replace('text-blue-700', 'text-amber-800');
+                document.getElementById('dock-admin').classList.remove('hidden');
             }
-            fetchDatabase();
+
+            fetchData(); // ดึงข้อมูลเริ่มแอป
         }
 
-        // --- ระบบฐานข้อมูล Firestore ---
-        async function fetchDatabase() {
-            const q = query(collection(db, "certificates"), orderBy("createdAt", "desc"));
+        // --- FETCH DATA ---
+        async function fetchData() {
+            loader.classList.remove('hidden', 'opacity-0');
             try {
-                const querySnapshot = await getDocs(q);
-                certificatesDatabaseCache = [];
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    certificatesDatabaseCache.push({ id: docSnap.id, ...data, createdTime: new Date(data.createdAt) });
+                const q = query(collection(db, "certificates"), orderBy("createdAt", "desc"));
+                const snap = await getDocs(q);
+                dbCache = [];
+                snap.forEach(doc => {
+                    dbCache.push({ id: doc.id, ...doc.data() });
                 });
-                updateAdminBadges();
-                window.filterCertificates();
-                if(currentUser.isAdmin) renderAdminPanel();
+                
+                initAppUI();
             } catch (error) {
                 console.error(error);
-                alert("ดึงข้อมูลไม่ได้ (ตรวจสอบ Rules ใน Firestore ว่าอนุญาตให้อ่านเขียนหรือยัง)");
-            } finally {
-                const loader = document.getElementById('loading-screen');
-                loader.classList.add('opacity-0');
-                setTimeout(() => loader.style.display = 'none', 500);
+                alert("ดึงข้อมูลไม่ได้ กรุณาเช็ค Firestore Rules (ต้อง allow read, write)");
             }
+            
+            setTimeout(() => {
+                loader.classList.add('opacity-0');
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    loginView.classList.add('hidden');
+                    appView.classList.remove('hidden');
+                    appView.classList.add('fade-in');
+                }, 300);
+            }, 500);
         }
 
-        // --- อัปโหลดข้อมูลและรูป (Storage & Firestore) ---
-        window.handleUpload = async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('file-input');
-            if (fileInput.files.length === 0) return alert('กรุณาเลือกรูปภาพด้วยครับ');
+        function initAppUI() {
+            renderCatFilters();
+            window.renderGallery();
+            if(currentUser.isAdmin) window.renderAdmin();
+        }
 
-            const file = fileInput.files[0];
-            const name = document.getElementById('input-name').value.trim();
-            const mainCat = document.getElementById('main-category').value;
-            const subCat = document.getElementById('sub-category').value;
-            const title = document.getElementById('input-title').value.trim();
+        // --- UI ROUTING ---
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
 
-            const loader = document.getElementById('loading-screen');
-            document.getElementById('loading-text').innerText = "กำลังบันทึกข้อมูล...";
-            loader.style.display = 'flex'; loader.classList.remove('opacity-0');
-
-            try {
-                // อัปโหลดรูปไป Firebase Storage
-                const timestamp = new Date().getTime();
-                const storagePath = `certificates/${timestamp}_${file.name}`;
-                const storageRef = ref(storage, storagePath);
-                
-                await uploadBytesResumable(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
-
-                // บันทึกข้อมูลข้อความลง Firestore
-                await addDoc(collection(db, "certificates"), {
-                    status: "pending",
-                    category: mainCat,
-                    subCategory: subCat,
-                    author: name,
-                    title: title,
-                    imageUrl: downloadURL,
-                    storagePath: storagePath,
-                    uploaderEmail: currentUser.email,
-                    createdAt: timestamp
-                });
-
-                alert('อัปโหลดสำเร็จ! รอแอดมินอนุมัติครับ');
-                document.getElementById('upload-form').reset();
-                window.removeSelectedFile(e);
-                window.switchView('gallery');
-                await fetchDatabase();
-            } catch (err) {
-                console.error(err);
-                alert('เกิดข้อผิดพลาดในการอัปโหลด (เช็ค Rules ใน Storage)');
-            } finally {
-                loader.classList.add('opacity-0');
-                setTimeout(() => loader.style.display = 'none', 500);
-            }
-        };
-
-        // --- ฟังก์ชัน UI ทั่วไป ---
-        window.updateSubCategories = () => {
-            const mainCat = document.getElementById('main-category').value;
-            const subSelect = document.getElementById('sub-category');
-            subSelect.innerHTML = '';
-            if (!mainCat || !subCategoryMatrix[mainCat]) {
-                subSelect.innerHTML = '<option value="">-- เลือกหมวดวิชาก่อน --</option>'; return;
-            }
-            subCategoryMatrix[mainCat].forEach(sub => subSelect.innerHTML += `<option value="${sub}">${sub}</option>`);
-        };
-
-        window.previewImage = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                document.getElementById('upload-prompt').classList.add('hidden');
-                document.getElementById('upload-preview-container').classList.remove('hidden');
-                document.getElementById('upload-preview').src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        };
-
-        window.removeSelectedFile = (e) => {
-            if(e) e.stopPropagation();
-            document.getElementById('file-input').value = "";
-            document.getElementById('upload-prompt').classList.remove('hidden');
-            document.getElementById('upload-preview-container').classList.add('hidden');
-            document.getElementById('upload-preview').src = "#";
-        };
-
-        window.switchView = (viewId) => {
-            document.querySelectorAll('.section-view').forEach(view => view.classList.add('hidden'));
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            document.querySelectorAll('.dock-item').forEach(item => {
-                item.classList.remove('bg-gradient-to-tr', 'from-blue-500', 'to-indigo-500', 'text-white');
-                item.classList.add('bg-white', 'text-gray-700');
+            document.querySelectorAll('.dock-item').forEach(el => {
+                el.classList.remove('dock-active'); el.classList.add('dock-inactive');
             });
-            const activeDock = document.getElementById(`dock-item-${viewId}`);
-            if(activeDock) {
-                activeDock.classList.remove('bg-white', 'text-gray-700');
-                activeDock.classList.add('bg-gradient-to-tr', 'from-blue-500', 'to-indigo-500', 'text-white');
-            }
+            document.getElementById(`dock-${tab}`).classList.remove('dock-inactive');
+            document.getElementById(`dock-${tab}`).classList.add('dock-active');
+            
+            if(tab === 'admin') window.renderAdmin();
         };
 
-        window.selectCategory = (cat, el) => {
-            activeCategory = cat;
-            document.querySelectorAll('.cat-pill').forEach(pill => {
-                pill.classList.remove('bg-gray-900', 'text-white', 'shadow-sm');
-                pill.classList.add('bg-white', 'text-gray-600');
+        // --- GALLERY LOGIC ---
+        function renderCatFilters() {
+            const cats = ['ทั้งหมด', ...Object.keys(subCatData)];
+            const container = document.getElementById('category-filters');
+            container.innerHTML = '';
+            cats.forEach(cat => {
+                const isActive = cat === activeCatFilter;
+                const cls = isActive ? 'bg-black text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50';
+                container.innerHTML += `<button onclick="window.setCatFilter('${cat}')" class="px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${cls}">${cat}</button>`;
             });
-            el.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
-            window.filterCertificates();
-        };
+        }
 
-        window.filterCertificates = () => {
-            const searchStr = document.getElementById('search-input').value.toLowerCase();
-            const sortOrder = document.getElementById('sort-select').value;
+        window.setCatFilter = (cat) => { activeCatFilter = cat; renderCatFilters(); window.renderGallery(); };
+
+        window.renderGallery = () => {
             const grid = document.getElementById('gallery-grid');
+            const search = document.getElementById('search-box').value.toLowerCase();
+            const sort = document.getElementById('sort-box').value;
             grid.innerHTML = '';
 
-            let items = certificatesDatabaseCache.filter(item => item.status === 'approved');
-            if (activeCategory !== 'all') items = items.filter(item => item.category === activeCategory);
-            if (searchStr) items = items.filter(item => item.title.toLowerCase().includes(searchStr) || item.author.toLowerCase().includes(searchStr));
+            let items = dbCache.filter(i => i.status === 'approved');
+            if(activeCatFilter !== 'ทั้งหมด') items = items.filter(i => i.mainCat === activeCatFilter);
+            if(search) items = items.filter(i => i.title.toLowerCase().includes(search) || i.name.toLowerCase().includes(search));
             
-            items.sort((a, b) => sortOrder === 'newest' ? b.createdTime - a.createdTime : a.createdTime - b.createdTime);
+            items.sort((a,b) => sort === 'new' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
-            if (items.length === 0) { document.getElementById('gallery-empty').classList.remove('hidden'); return; }
+            if(items.length === 0) { document.getElementById('gallery-empty').classList.remove('hidden'); return; }
             document.getElementById('gallery-empty').classList.add('hidden');
 
             items.forEach(item => {
                 grid.innerHTML += `
-                    <div onclick="window.openModal('${item.id}')" class="bg-white p-4 rounded-3xl border border-gray-200 apple-shadow cursor-pointer hover:-translate-y-1 transition-transform">
-                        <div class="w-full h-44 rounded-2xl overflow-hidden bg-gray-50 mb-4 relative">
-                            <img src="${item.imageUrl}" class="w-full h-full object-cover">
-                            <span class="absolute top-2 left-2 bg-white/90 text-[10px] font-semibold px-2 py-0.5 rounded-full border">${item.category}</span>
-                        </div>
-                        <h4 class="font-bold text-gray-900 leading-tight line-clamp-2 mb-1">${item.title}</h4>
-                        <p class="text-xs text-gray-500"><i class="fa-solid fa-user-graduate mr-1"></i> ${item.author}</p>
-                    </div>`;
+                <div onclick="window.openDetail('${item.id}')" class="bg-white rounded-[24px] p-3 apple-shadow apple-card-hover cursor-pointer border border-gray-100 flex flex-col group h-full">
+                    <div class="w-full h-48 rounded-[18px] bg-gray-50 overflow-hidden relative mb-3">
+                        <img src="${item.imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-2 left-2 bg-white/90 backdrop-blur text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">${item.mainCat}</div>
+                    </div>
+                    <div class="px-2 pb-2 flex-1 flex flex-col">
+                        <h4 class="font-bold text-gray-900 leading-tight mb-1 line-clamp-2">${item.title}</h4>
+                        <p class="text-xs text-gray-500 mt-auto"><i class="fa-solid fa-user-graduate mr-1 text-gray-400"></i> ${item.name}</p>
+                    </div>
+                </div>`;
             });
         };
 
-        window.openModal = (id) => {
-            const item = certificatesDatabaseCache.find(i => i.id === id);
-            if(!item) return;
-            document.getElementById('modal-img').src = item.imageUrl;
-            document.getElementById('modal-title').innerText = item.title;
-            document.getElementById('modal-author').innerText = item.author;
-            document.getElementById('modal-tag').innerText = item.category;
-            document.getElementById('modal-sub').innerText = item.subCategory;
-            document.getElementById('modal-download-link').href = item.imageUrl;
-            document.getElementById('detail-modal').classList.remove('hidden');
+        // --- UPLOAD LOGIC ---
+        window.updateSubcategories = () => {
+            const main = document.getElementById('f-maincat').value;
+            const sub = document.getElementById('f-subcat');
+            sub.innerHTML = '';
+            if(!main) { sub.innerHTML = '<option value="">-- เลือกหมวดหลักก่อน --</option>'; return; }
+            subCatData[main].forEach(s => sub.innerHTML += `<option value="${s}">${s}</option>`);
         };
-        window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
-        // --- ระบบจัดการของแอดมิน ---
-        window.switchAdminTab = (tab) => {
-            currentAdminTab = tab;
-            document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
-                btn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600', 'font-semibold');
-                btn.classList.add('text-gray-500', 'border-transparent', 'font-medium');
+        window.handleImageSelect = (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            uploadedFile = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                document.getElementById('image-preview').src = ev.target.result;
+                document.getElementById('image-preview').classList.remove('hidden');
+                document.getElementById('remove-img-btn').classList.remove('hidden');
+                document.getElementById('dropzone-text').classList.add('hidden');
+                document.getElementById('dropzone').classList.remove('border-dashed', 'border-gray-300');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.removeImage = (e) => {
+            e.stopPropagation();
+            uploadedFile = null;
+            document.getElementById('file-input').value = "";
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('remove-img-btn').classList.add('hidden');
+            document.getElementById('dropzone-text').classList.remove('hidden');
+            document.getElementById('dropzone').classList.add('border-dashed', 'border-gray-300');
+        };
+
+        window.submitCertificate = async (e) => {
+            e.preventDefault();
+            if(!uploadedFile) return alert("กรุณาเลือกรูปภาพเกียรติบัตรด้วยครับ!");
+
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังอัปโหลด...';
+            btn.disabled = true;
+
+            try {
+                const ts = Date.now();
+                const path = `certs/${ts}_${uploadedFile.name}`;
+                const storageRef = ref(storage, path);
+                
+                await uploadBytesResumable(storageRef, uploadedFile);
+                const url = await getDownloadURL(storageRef);
+
+                await addDoc(collection(db, "certificates"), {
+                    status: "pending", // รอตรวจ
+                    name: document.getElementById('f-name').value.trim(),
+                    mainCat: document.getElementById('f-maincat').value,
+                    subCat: document.getElementById('f-subcat').value,
+                    title: document.getElementById('f-title').value.trim(),
+                    desc: document.getElementById('f-desc').value.trim() || "-",
+                    imgUrl: url,
+                    imgPath: path,
+                    uploader: currentUser.email,
+                    createdAt: ts
+                });
+
+                alert("ส่งผลงานเรียบร้อย! รอแอดมินตรวจสอบเพื่อนำขึ้นหอเกียรติยศครับ");
+                document.getElementById('upload-form').reset();
+                window.removeImage(new Event('click'));
+                window.switchTab('gallery');
+                await fetchData();
+            } catch(err) {
+                console.error(err);
+                alert("เกิดข้อผิดพลาดในการบันทึก");
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ส่งข้อมูลให้ผู้บริหารตรวจ';
+                btn.disabled = false;
+            }
+        };
+
+        // --- ADMIN LOGIC ---
+        window.setAdminTab = (tab) => {
+            currentAdminState = tab;
+            document.querySelectorAll('.admin-tab').forEach(el => {
+                el.classList.remove('border-amber-500','border-green-500','border-red-500','text-amber-600','text-green-600','text-red-600');
+                el.classList.add('border-transparent','text-gray-500');
             });
-            document.getElementById(`tab-btn-${tab}`).classList.add('text-blue-600', 'border-b-2', 'border-blue-600', 'font-semibold');
-            renderAdminPanel();
+            
+            const active = document.getElementById(`tab-${tab}`);
+            if(tab==='pending') active.classList.add('border-amber-500','text-amber-600');
+            if(tab==='approved') active.classList.add('border-green-500','text-green-600');
+            if(tab==='rejected') active.classList.add('border-red-500','text-red-600');
+            
+            window.renderAdmin();
         };
 
-        function updateAdminBadges() {
-            document.getElementById('badge-pending-count').innerText = certificatesDatabaseCache.filter(i => i.status === 'pending').length;
-            document.getElementById('badge-approved-count').innerText = certificatesDatabaseCache.filter(i => i.status === 'approved').length;
-            document.getElementById('badge-rejected-count').innerText = certificatesDatabaseCache.filter(i => i.status === 'rejected').length;
-            if (certificatesDatabaseCache.filter(i => i.status === 'pending').length > 0) document.getElementById('dock-admin-badge').classList.remove('hidden');
-            else document.getElementById('dock-admin-badge').classList.add('hidden');
-        }
+        window.renderAdmin = () => {
+            // อัปเดตตัวเลข
+            const p = dbCache.filter(i=>i.status==='pending').length;
+            const a = dbCache.filter(i=>i.status==='approved').length;
+            const r = dbCache.filter(i=>i.status==='rejected').length;
+            
+            document.getElementById('badge-pending').innerText = p;
+            document.getElementById('badge-approved').innerText = a;
+            document.getElementById('badge-rejected').innerText = r;
+            
+            const dot = document.getElementById('dock-admin-dot');
+            if(p > 0) dot.classList.remove('hidden'); else dot.classList.add('hidden');
 
-        function renderAdminPanel() {
-            const container = document.getElementById('admin-list-container');
-            container.innerHTML = '';
-            const items = certificatesDatabaseCache.filter(i => i.status === currentAdminTab);
+            const list = document.getElementById('admin-list');
+            list.innerHTML = '';
+            const items = dbCache.filter(i => i.status === currentAdminState);
 
-            if(items.length === 0) { document.getElementById('admin-empty').classList.remove('hidden'); return; }
-            document.getElementById('admin-empty').classList.add('hidden');
+            if(items.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 text-gray-400">ไม่มีรายการในหมวดนี้</div>`;
+                return;
+            }
 
             items.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl border flex justify-between">
-                        <div class="flex items-center space-x-4">
-                            <img src="${item.imageUrl}" class="w-16 h-16 rounded-xl object-cover border">
-                            <div><h5 class="text-sm font-bold truncate w-48">${item.title}</h5><p class="text-xs text-gray-500">${item.author}</p></div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            ${currentAdminTab === 'pending' ? `
-                                <button onclick="window.modifyStatus('${item.id}', 'approved')" class="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-semibold border">อนุมัติ</button>
-                                <button onclick="window.modifyStatus('${item.id}', 'rejected')" class="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold border">ปฏิเสธ</button>
-                            ` : ''}
-                            <button onclick="window.deleteItem('${item.id}', '${item.storagePath || ''}')" class="px-3 py-1 bg-gray-50 text-gray-500 hover:text-red-600 rounded-lg text-xs border"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>`;
+                const date = new Date(item.createdAt).toLocaleDateString('th-TH');
+                list.innerHTML += `
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 apple-shadow flex flex-col md:flex-row gap-4 items-start md:items-center">
+                    <img src="${item.imgUrl}" class="w-32 h-20 object-cover rounded-xl border border-gray-200 cursor-pointer" onclick="window.openDetail('${item.id}')">
+                    <div class="flex-1">
+                        <div class="flex gap-2 text-[10px] font-bold mb-1"><span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">${item.mainCat}</span></div>
+                        <h4 class="font-bold text-gray-900">${item.title}</h4>
+                        <p class="text-xs text-gray-500">โดย: ${item.name} | วันที่: ${date}</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        ${currentAdminState === 'pending' || currentAdminState === 'rejected' ? `<button onclick="window.updateStatus('${item.id}', 'approved')" class="flex-1 md:flex-none px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-sm font-semibold transition-colors">อนุมัติ</button>` : ''}
+                        ${currentAdminState === 'pending' || currentAdminState === 'approved' ? `<button onclick="window.updateStatus('${item.id}', 'rejected')" class="flex-1 md:flex-none px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-xl text-sm font-semibold transition-colors">ปฏิเสธ</button>` : ''}
+                        <button onclick="window.deleteRecord('${item.id}', '${item.imgPath}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
             });
-        }
-
-        window.modifyStatus = async (id, status) => {
-            try { await updateDoc(doc(db, "certificates", id), { status: status }); await fetchDatabase(); } catch(e) { alert("อัปเดตสถานะไม่สำเร็จ"); }
         };
 
-        window.deleteItem = async (id, path) => {
-            if(!confirm('ยืนยันลบข้อมูลนี้ถาวร?')) return;
+        window.updateStatus = async (id, newStatus) => {
+            try { await updateDoc(doc(db, "certificates", id), { status: newStatus }); await fetchData(); } 
+            catch(e) { alert("เกิดข้อผิดพลาด"); }
+        };
+
+        window.deleteRecord = async (id, path) => {
+            if(!confirm("ยืนยันการลบข้อมูลนี้ถาวร? (รูประบบก็จะหายไปด้วย)")) return;
             try {
-                if (path) await deleteObject(ref(storage, path)).catch(()=>console.log("ไม่มีไฟล์ให้ลบ"));
+                if(path) await deleteObject(ref(storage, path)).catch(()=>console.log("ไม่มีไฟล์ให้ลบ"));
                 await deleteDoc(doc(db, "certificates", id));
-                await fetchDatabase();
-            } catch(e) { alert("ลบข้อมูลไม่สำเร็จ"); }
+                await fetchData();
+            } catch(e) { alert("ลบไม่สำเร็จ"); }
         };
 
-        // --- เพิ่ม/ลด แอดมิน ---
-        window.toggleAdminManagerModal = () => {
-            const modal = document.getElementById('admin-manager-modal');
+        // --- MODALS ---
+        window.openDetail = (id) => {
+            const data = dbCache.find(i => i.id === id);
+            if(!data) return;
+            document.getElementById('m-img').src = data.imgUrl;
+            document.getElementById('m-maincat').innerText = data.mainCat;
+            document.getElementById('m-subcat').innerText = data.subCat;
+            document.getElementById('m-title').innerText = data.title;
+            document.getElementById('m-name').innerText = data.name;
+            document.getElementById('m-desc').innerText = data.desc;
+            document.getElementById('m-date').innerText = "อัปโหลด: " + new Date(data.createdAt).toLocaleDateString('th-TH');
+            document.getElementById('m-download').href = data.imgUrl;
+            
+            document.getElementById('detail-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
+
+        // Admin Management
+        window.toggleAdminModal = () => {
+            const modal = document.getElementById('admin-modal');
             modal.classList.toggle('hidden');
-            if(!modal.classList.contains('hidden')) renderAdminsList();
+            if(!modal.classList.contains('hidden')) renderAdminListUI();
         };
 
-        function renderAdminsList() {
-            const list = document.getElementById('admin-emails-list');
-            list.innerHTML = '';
-            superAdminsList.forEach(email => {
-                list.innerHTML += `<li class="flex justify-between bg-gray-50 px-3 py-2 rounded-xl text-sm"><span>${email}</span> ${email !== 'aceaa372@gmail.com' ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>` : ''}</li>`;
+        function renderAdminListUI() {
+            const ul = document.getElementById('admin-list-ul');
+            ul.innerHTML = '';
+            adminEmails.forEach(email => {
+                ul.innerHTML += `
+                <li class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-lg text-sm border border-gray-100">
+                    <span class="font-medium text-gray-700">${email}</span>
+                    ${email !== 'aceaa372@gmail.com' ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-[10px] text-gray-400">Master</span>'}
+                </li>`;
             });
         }
 
-        window.handleAddAdmin = (e) => {
+        window.addAdmin = (e) => {
             e.preventDefault();
             const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
-            if(!superAdminsList.includes(email)) {
-                superAdminsList.push(email); localStorage.setItem('ntun_vault_admins', JSON.stringify(superAdminsList));
+            if(!adminEmails.includes(email)) {
+                adminEmails.push(email);
+                localStorage.setItem('ntun_admins', JSON.stringify(adminEmails));
             }
-            document.getElementById('new-admin-email').value = ''; renderAdminsList(); setupDashboard();
+            document.getElementById('new-admin-email').value = '';
+            renderAdminListUI();
         };
 
         window.removeAdmin = (email) => {
-            superAdminsList = superAdminsList.filter(e => e !== email);
-            localStorage.setItem('ntun_vault_admins', JSON.stringify(superAdminsList)); renderAdminsList(); setupDashboard();
+            adminEmails = adminEmails.filter(e => e !== email);
+            localStorage.setItem('ntun_admins', JSON.stringify(adminEmails));
+            renderAdminListUI();
         };
+
     </script>
 </body>
 </html>

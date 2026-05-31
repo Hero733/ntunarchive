@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NTUN Certificate Vault (Firebase Edition)</title>
+    
+    <meta name="google-signin-client_id" content="594076056272-ic8smisk2j4kdhd8n4dmpf7vrul0p8hn.apps.googleusercontent.com">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -59,9 +62,8 @@
                     <span class="text-sm font-semibold tracking-tight text-gray-600">Sign in with Google</span>
                 </button>
             </div>
-
             <div class="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-400">
-                <i class="fa-solid fa-fire mr-1 text-orange-500"></i> ขับเคลื่อนด้วย Firebase Platform
+                <i class="fa-solid fa-fire mr-1 text-orange-500"></i> ระบบฐานข้อมูลทำงานด้วย Firebase
             </div>
         </div>
     </div>
@@ -93,11 +95,11 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative w-full sm:w-64">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="search-input" oninput="window.filterCertificates()" placeholder="ค้นหาชื่อ หรือรายการรางวัล..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                        <input type="text" id="search-input" oninput="window.filterCertificates()" placeholder="ค้นหาชื่อ หรือรางวัล..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                     </div>
                     <select id="sort-select" onchange="window.filterCertificates()" class="px-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
                         <option value="newest">อัปโหลดใหม่ล่าสุด</option>
-                        <option value="oldest">ของเก่าดั้งเดิม</option>
+                        <option value="oldest">เก่าที่สุด</option>
                     </select>
                 </div>
             </div>
@@ -106,33 +108,33 @@
                 <button onclick="window.selectCategory('all', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gray-900 text-white shadow-sm cursor-pointer">ทั้งหมด</button>
                 <button onclick="window.selectCategory('คณิตศาสตร์', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">คณิตศาสตร์</button>
                 <button onclick="window.selectCategory('วิทยาศาสตร์', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">วิทยาศาสตร์</button>
-                <button onclick="window.selectCategory('ภาษา', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">ภาษาต่างประเทศ</button>
+                <button onclick="window.selectCategory('ภาษา', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">ภาษา</button>
                 <button onclick="window.selectCategory('เทคโนโลยี', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">เทคโนโลยี</button>
-                <button onclick="window.selectCategory('อื่นๆ', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">หมวดหมู่อื่นๆ</button>
+                <button onclick="window.selectCategory('อื่นๆ', this)" class="cat-pill px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/40 cursor-pointer">อื่นๆ</button>
             </div>
 
             <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             
             <div id="gallery-empty" class="hidden text-center py-20">
                 <i class="fa-solid fa-folder-open text-5xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500 font-medium">ยังไม่มีข้อมูลเกียรติบัตรที่ผ่านการตรวจสอบในหมวดหมู่นี้</p>
+                <p class="text-gray-500 font-medium">ยังไม่มีข้อมูลเกียรติบัตรในหมวดหมู่นี้</p>
             </div>
         </main>
 
         <main id="view-upload" class="max-w-3xl mx-auto px-6 pt-10 section-view hidden">
             <div class="mb-10 text-center">
-                <h1 class="text-4xl font-extrabold tracking-tight">สตูดิโออัปโหลด</h1>
-                <p class="text-gray-500 mt-2">ส่งเอกสารเกียรติบัตรของคุณเข้าสู่คลังหลัก เพื่อให้ระบบส่งต่อคิวพิจารณาของแอดมิน</p>
+                <h1 class="text-4xl font-extrabold tracking-tight">เพิ่มเกียรติบัตร</h1>
+                <p class="text-gray-500 mt-2">อัปโหลดเกียรติบัตรของคุณเข้าสู่คลังข้อมูล ระบบจะส่งให้แอดมินตรวจสอบ</p>
             </div>
 
             <form id="upload-form" onsubmit="window.handleUpload(event)" class="bg-white p-8 sm:p-10 rounded-3xl border border-gray-200/60 apple-shadow space-y-6">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">รูปภาพหลักฐานเกียรติบัตร</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">รูปภาพเกียรติบัตร</label>
                     <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-gray-200 hover:border-blue-500 rounded-2xl p-8 text-center cursor-pointer bg-gray-50/50 hover:bg-blue-50/10 transition-all duration-300 flex flex-col items-center justify-center min-h-[220px]">
                         <input type="file" id="file-input" accept="image/*" class="hidden" onchange="window.previewImage(event)">
                         <div id="upload-prompt" class="space-y-3">
                             <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400"></i>
-                            <p class="text-sm font-medium text-gray-600">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกรูปภาพ</p>
+                            <p class="text-sm font-medium text-gray-600">คลิกเพื่อเลือกไฟล์รูปภาพ</p>
                         </div>
                         <div id="upload-preview-container" class="hidden w-full relative">
                             <img id="upload-preview" src="#" alt="Preview Data" class="max-h-52 mx-auto rounded-xl shadow-md border">
@@ -142,38 +144,38 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล ผู้ได้รับรางวัลตามใบประกาศ</label>
-                    <input type="text" id="input-name" required placeholder="ตัวอย่าง: นายคูณทรัพย์ เพชรวิชิต" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล ผู้ได้รับรางวัล</label>
+                    <input type="text" id="input-name" required placeholder="นายคูณทรัพย์ เพชรวิชิต" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">หมวดวิชาการหลัก</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">หมวดวิชา</label>
                         <select id="main-category" onchange="window.updateSubCategories()" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                            <option value="">-- เลือกหมวดวิชาหลัก --</option>
+                            <option value="">-- เลือกหมวดหมู่ --</option>
                             <option value="คณิตศาสตร์">คณิตศาสตร์</option>
                             <option value="วิทยาศาสตร์">วิทยาศาสตร์</option>
-                            <option value="ภาษา">ภาษาต่างประเทศ</option>
+                            <option value="ภาษา">ภาษา</option>
                             <option value="เทคโนโลยี">เทคโนโลยี</option>
                             <option value="อื่นๆ">อื่นๆ</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">รายการประกวดแข่งขันย่อย</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">รายการแข่งขัน</label>
                         <select id="sub-category" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer">
-                            <option value="">-- กรุณาเลือกหมวดหลักก่อน --</option>
+                            <option value="">-- เลือกหมวดวิชาก่อน --</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">รายละเอียดและชื่อรายการประกวดแข่งขัน</label>
-                    <input type="text" id="input-title" required placeholder="ตัวอย่าง: รางวัลชนะเลิศอันดับ 1 การแข่งขันฟิสิกส์สัประยุทธ์ระดับภาค" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อรางวัลที่ได้รับ</label>
+                    <input type="text" id="input-title" required placeholder="รางวัลชนะเลิศอันดับ 1 ฟิสิกส์สัประยุทธ์" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                 </div>
 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer">
                     <i class="fa-solid fa-paper-plane"></i>
-                    <span>อัปโหลดไปที่ Firebase</span>
+                    <span>บันทึกข้อมูลเข้าระบบ</span>
                 </button>
             </form>
         </main>
@@ -181,29 +183,29 @@
         <main id="view-admin" class="max-w-7xl mx-auto px-6 pt-10 section-view hidden">
             <div class="mb-10 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                    <h1 class="text-4xl font-extrabold tracking-tight">แผงควบคุมแอดมิน</h1>
+                    <h1 class="text-4xl font-extrabold tracking-tight">จัดการข้อมูล (Admin)</h1>
                 </div>
                 <button onclick="window.toggleAdminManagerModal()" class="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full shadow-md cursor-pointer">
-                    <i class="fa-solid fa-user-gear mr-2"></i>จัดการทีมแอดมิน
+                    <i class="fa-solid fa-user-gear mr-2"></i>จัดการแอดมิน
                 </button>
             </div>
 
             <div class="border-b border-gray-200 mb-8 flex space-x-6">
                 <button onclick="window.switchAdminTab('pending')" id="tab-btn-pending" class="pb-4 px-2 text-blue-600 border-b-2 border-blue-600 text-sm font-semibold flex items-center gap-2 cursor-pointer">
-                    ยังไม่ได้ตรวจ <span id="badge-pending-count" class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">0</span>
+                    รอตรวจสอบ <span id="badge-pending-count" class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">0</span>
                 </button>
                 <button onclick="window.switchAdminTab('approved')" id="tab-btn-approved" class="pb-4 px-2 text-gray-500 border-b-2 border-transparent text-sm font-medium flex items-center gap-2 cursor-pointer">
-                    ผ่านแล้ว <span id="badge-approved-count" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
+                    อนุมัติแล้ว <span id="badge-approved-count" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
                 </button>
                 <button onclick="window.switchAdminTab('rejected')" id="tab-btn-rejected" class="pb-4 px-2 text-gray-500 border-b-2 border-transparent text-sm font-medium flex items-center gap-2 cursor-pointer">
-                    ไม่ผ่าน <span id="badge-rejected-count" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
+                    ไม่อนุมัติ <span id="badge-rejected-count" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">0</span>
                 </button>
             </div>
 
             <div id="admin-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             <div id="admin-empty" class="hidden text-center py-16 text-gray-400">
                 <i class="fa-solid fa-circle-check text-4xl mb-3 text-green-500"></i>
-                <p>ไม่มีเกียรติบัตรค้างคาในหน้านี้แล้วครับ</p>
+                <p>ไม่มีรายการค้างในหน้านี้</p>
             </div>
         </main>
 
@@ -241,7 +243,7 @@
                 </div>
                 <div class="space-y-4">
                     <form onsubmit="window.handleAddAdmin(event)" class="flex gap-2">
-                        <input type="email" id="new-admin-email" required placeholder="เพิ่มอีเมลแอดมิน..." class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                        <input type="email" id="new-admin-email" required placeholder="ใส่อีเมลแอดมินใหม่..." class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none">
                         <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-xl">เพิ่ม</button>
                     </form>
                     <div class="border-t border-gray-100 pt-4">
@@ -265,7 +267,6 @@
                 </button>
             </div>
         </div>
-
     </div>
 
     <script type="module">
@@ -274,6 +275,7 @@
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
+        // 1. Config ของคุณ
         const firebaseConfig = {
             apiKey: "AIzaSyCWlvcyFx7X90MQvkuFTqS9Dq-ylyKb8ok",
             authDomain: "ntunarchive.firebaseapp.com",
@@ -284,30 +286,33 @@
             measurementId: "G-LJJME2SNKF"
         };
 
+        // 2. เริ่มต้น Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
+        // 3. ตัวแปรสถานะ
         let currentUser = null;
         let activeCategory = 'all';
         let currentAdminTab = 'pending';
         let certificatesDatabaseCache = [];
 
+        // รายชื่อแอดมินหลัก
         let superAdminsList = ['aceaa372@gmail.com']; 
         if(localStorage.getItem('ntun_vault_admins')) {
             try { superAdminsList = JSON.parse(localStorage.getItem('ntun_vault_admins')); } catch(e) {}
         }
 
         const subCategoryMatrix = {
-            'คณิตศาสตร์': ['โอลิมปิกวิชาการ (สอวน.)', 'ทักษะคณิตศาสตร์ ศิลปหัตถกรรม', 'คิดเลขเร็ว', 'อื่นๆย่อย'],
-            'วิทยาศาสตร์': ['ฟิสิกส์', 'เคมี', 'ชีววิทยา', 'ดาราศาสตร์', 'โครงงานวิทยาศาสตร์'],
-            'ภาษา': ['ภาษาอังกฤษ (Speech Contest)', 'ภาษาไทย (สุนทรพจน์)', 'ภาษาจีน', 'ภาษาญี่ปุ่น'],
-            'เทคโนโลยี': ['เขียนโปรแกรม (Coding)', 'หุ่นยนต์ขั้นสูง', 'กราฟิกดีไซน์', 'โครงงานคอมพิวเตอร์'],
-            'อื่นๆ': ['ดนตรี-นาฏศิลป์', 'กีฬาและนันทนาการ', 'คุณธรรมจริยธรรม ดีเด่น']
+            'คณิตศาสตร์': ['โอลิมปิกวิชาการ', 'ศิลปหัตถกรรม', 'คิดเลขเร็ว', 'อื่นๆ'],
+            'วิทยาศาสตร์': ['ฟิสิกส์', 'เคมี', 'ชีววิทยา', 'ดาราศาสตร์', 'โครงงาน'],
+            'ภาษา': ['อังกฤษ', 'ไทย', 'จีน', 'ญี่ปุ่น'],
+            'เทคโนโลยี': ['เขียนโปรแกรม', 'หุ่นยนต์', 'กราฟิก', 'โครงงานคอม'],
+            'อื่นๆ': ['ดนตรี', 'กีฬา', 'คุณธรรม']
         };
 
-        // --- Auth State Observer ---
+        // --- ระบบล็อกอิน ---
         onAuthStateChanged(auth, (user) => {
             const loader = document.getElementById('loading-screen');
             if (user) {
@@ -318,45 +323,36 @@
             }
         });
 
-        // --- Expose functions to window (HTML) ---
         window.loginWithGoogle = () => {
             const provider = new GoogleAuthProvider();
             document.getElementById('loading-screen').style.display = 'flex';
             document.getElementById('loading-screen').classList.remove('opacity-0');
             
-            signInWithPopup(auth, provider).then((result) => {
-                // onAuthStateChanged will handle the rest
-            }).catch((error) => {
-                alert('เกิดข้อผิดพลาดในการล็อกอิน: ' + error.message);
+            signInWithPopup(auth, provider).catch((error) => {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
                 document.getElementById('loading-screen').classList.add('opacity-0');
             });
         };
 
-        window.logout = () => {
-            signOut(auth).then(() => { window.location.reload(); });
-        };
+        window.logout = () => signOut(auth).then(() => window.location.reload());
 
         function verifyAndProcessUser(user) {
             const email = user.email.toLowerCase();
+            // ตรวจสอบโดเมน (อนุญาตแค่ @ntun.ac.th และอีเมลแอดมิน)
             const isNtunDomain = email.endsWith('@ntun.ac.th'); 
             const isSuperAdmin = superAdminsList.includes(email); 
 
             if (!isNtunDomain && !isSuperAdmin) {
-                alert('ขออภัย ระบบจำกัดไว้เฉพาะบัญชีกลุ่มโรงเรียน @ntun.ac.th หรือแอดมินเท่านั้นครับ');
+                alert('ไม่อนุญาตให้เข้าถึง: ต้องใช้อีเมล @ntun.ac.th หรืออีเมลแอดมินเท่านั้น');
                 window.logout();
                 return;
             }
 
-            currentUser = {
-                uid: user.uid,
-                name: user.displayName || user.email,
-                email: email,
-                isAdmin: isSuperAdmin
-            };
-            setupApplicationDashboard();
+            currentUser = { uid: user.uid, name: user.displayName || user.email, email: email, isAdmin: isSuperAdmin };
+            setupDashboard();
         }
 
-        function setupApplicationDashboard() {
+        function setupDashboard() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
 
@@ -365,59 +361,45 @@
             
             const badge = document.getElementById('user-badge');
             if (currentUser.isAdmin) {
-                badge.innerText = "Administrator";
+                badge.innerText = "แอดมิน";
                 badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800 border border-amber-200";
                 document.getElementById('dock-item-admin').classList.remove('hidden');
             } else {
-                badge.innerText = "Student/User";
-                badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200/50";
+                badge.innerText = "นักเรียน";
+                badge.className = "px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200";
                 document.getElementById('dock-item-admin').classList.add('hidden');
             }
-
-            fetchFirebaseDatabase();
+            fetchDatabase();
         }
 
-        async function fetchFirebaseDatabase() {
-            showGalleryLoadingSkeleton();
-            const loader = document.getElementById('loading-screen');
-            
+        // --- ระบบฐานข้อมูล Firestore ---
+        async function fetchDatabase() {
+            const q = query(collection(db, "certificates"), orderBy("createdAt", "desc"));
             try {
-                const q = query(collection(db, "certificates"), orderBy("createdAt", "desc"));
                 const querySnapshot = await getDocs(q);
-                
                 certificatesDatabaseCache = [];
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    certificatesDatabaseCache.push({
-                        id: docSnap.id,
-                        status: data.status,
-                        category: data.category,
-                        author: data.author,
-                        title: data.title,
-                        subCategory: data.subCategory,
-                        imageUrl: data.imageUrl,
-                        storagePath: data.storagePath,
-                        createdTime: new Date(data.createdAt)
-                    });
+                    certificatesDatabaseCache.push({ id: docSnap.id, ...data, createdTime: new Date(data.createdAt) });
                 });
-                
-                updateAdminBadgesCount();
+                updateAdminBadges();
                 window.filterCertificates();
-                if(currentUser.isAdmin) renderAdminPanelItems();
-
+                if(currentUser.isAdmin) renderAdminPanel();
             } catch (error) {
                 console.error(error);
-                alert("ดึงข้อมูลไม่สำเร็จ โปรดตรวจสอบว่า Firestore Rules เปิดให้อ่านข้อมูลหรือไม่");
+                alert("ดึงข้อมูลไม่ได้ (ตรวจสอบ Rules ใน Firestore ว่าอนุญาตให้อ่านเขียนหรือยัง)");
             } finally {
+                const loader = document.getElementById('loading-screen');
                 loader.classList.add('opacity-0');
                 setTimeout(() => loader.style.display = 'none', 500);
             }
         }
 
+        // --- อัปโหลดข้อมูลและรูป (Storage & Firestore) ---
         window.handleUpload = async (e) => {
             e.preventDefault();
             const fileInput = document.getElementById('file-input');
-            if (fileInput.files.length === 0) return alert('กรุณาเลือกไฟล์ภาพเกียรติบัตรก่อนครับ');
+            if (fileInput.files.length === 0) return alert('กรุณาเลือกรูปภาพด้วยครับ');
 
             const file = fileInput.files[0];
             const name = document.getElementById('input-name').value.trim();
@@ -426,12 +408,11 @@
             const title = document.getElementById('input-title').value.trim();
 
             const loader = document.getElementById('loading-screen');
-            document.getElementById('loading-text').innerText = "กำลังอัปโหลดไปยัง Firebase Storage...";
-            loader.style.display = 'flex';
-            loader.classList.remove('opacity-0');
+            document.getElementById('loading-text').innerText = "กำลังบันทึกข้อมูล...";
+            loader.style.display = 'flex'; loader.classList.remove('opacity-0');
 
             try {
-                // 1. Upload to Storage
+                // อัปโหลดรูปไป Firebase Storage
                 const timestamp = new Date().getTime();
                 const storagePath = `certificates/${timestamp}_${file.name}`;
                 const storageRef = ref(storage, storagePath);
@@ -439,8 +420,7 @@
                 await uploadBytesResumable(storageRef, file);
                 const downloadURL = await getDownloadURL(storageRef);
 
-                // 2. Add to Firestore
-                document.getElementById('loading-text').innerText = "กำลังบันทึกข้อมูลเกียรติบัตร...";
+                // บันทึกข้อมูลข้อความลง Firestore
                 await addDoc(collection(db, "certificates"), {
                     status: "pending",
                     category: mainCat,
@@ -453,71 +433,36 @@
                     createdAt: timestamp
                 });
 
-                alert('ส่งไฟล์เข้าคลัง Firebase สำเร็จแล้ว! รอแอดมินพิจารณาครับ');
+                alert('อัปโหลดสำเร็จ! รอแอดมินอนุมัติครับ');
                 document.getElementById('upload-form').reset();
                 window.removeSelectedFile(e);
                 window.switchView('gallery');
-                await fetchFirebaseDatabase();
-
+                await fetchDatabase();
             } catch (err) {
                 console.error(err);
-                alert('เกิดข้อผิดพลาดในการอัปโหลด โปรดตรวจสอบ Storage/Firestore Rules ของ Firebase');
+                alert('เกิดข้อผิดพลาดในการอัปโหลด (เช็ค Rules ใน Storage)');
             } finally {
                 loader.classList.add('opacity-0');
                 setTimeout(() => loader.style.display = 'none', 500);
-                document.getElementById('loading-text').innerText = "กำลังเชื่อมต่อ Firebase...";
             }
         };
 
-        window.modifyCertificateStatus = async (docId, targetStatus) => {
-            const loader = document.getElementById('loading-screen');
-            loader.style.display = 'flex'; loader.classList.remove('opacity-0');
-            try {
-                const docRef = doc(db, "certificates", docId);
-                await updateDoc(docRef, { status: targetStatus });
-                await fetchFirebaseDatabase();
-            } catch(err) { console.error(err); alert("อัปเดตสถานะล้มเหลว"); } 
-            finally { loader.classList.add('opacity-0'); setTimeout(() => loader.style.display = 'none', 500); }
-        };
-
-        window.deleteCertificateFile = async (docId, storagePath) => {
-            if(!confirm('ยืนยันลบเกียรติบัตรนี้ถาวรจาก Firebase เลยใช่ไหมครับ?')) return;
-            const loader = document.getElementById('loading-screen');
-            loader.style.display = 'flex'; loader.classList.remove('opacity-0');
-            
-            try {
-                // ลบรูปจาก Storage (ถ้ามี Path)
-                if (storagePath) {
-                    const fileRef = ref(storage, storagePath);
-                    await deleteObject(fileRef).catch(e => console.warn("ลบไฟล์ใน Storage ไม่สำเร็จ (อาจโดนลบไปแล้ว)", e));
-                }
-                // ลบข้อมูลจาก Firestore
-                await deleteDoc(doc(db, "certificates", docId));
-                await fetchFirebaseDatabase();
-            } catch(err) { console.error(err); alert("ลบข้อมูลล้มเหลว"); }
-            finally { loader.classList.add('opacity-0'); setTimeout(() => loader.style.display = 'none', 500); }
-        };
-
-        // --- UI & Helper Functions ---
+        // --- ฟังก์ชัน UI ทั่วไป ---
         window.updateSubCategories = () => {
             const mainCat = document.getElementById('main-category').value;
             const subSelect = document.getElementById('sub-category');
             subSelect.innerHTML = '';
             if (!mainCat || !subCategoryMatrix[mainCat]) {
-                subSelect.innerHTML = '<option value="">-- กรุณาเลือกหมวดหลักก่อน --</option>'; return;
+                subSelect.innerHTML = '<option value="">-- เลือกหมวดวิชาก่อน --</option>'; return;
             }
-            subCategoryMatrix[mainCat].forEach(sub => {
-                const opt = document.createElement('option');
-                opt.value = sub; opt.innerText = sub;
-                subSelect.appendChild(opt);
-            });
+            subCategoryMatrix[mainCat].forEach(sub => subSelect.innerHTML += `<option value="${sub}">${sub}</option>`);
         };
 
         window.previewImage = (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = (event) => {
                 document.getElementById('upload-prompt').classList.add('hidden');
                 document.getElementById('upload-preview-container').classList.remove('hidden');
                 document.getElementById('upload-preview').src = event.target.result;
@@ -526,7 +471,7 @@
         };
 
         window.removeSelectedFile = (e) => {
-            e.stopPropagation();
+            if(e) e.stopPropagation();
             document.getElementById('file-input').value = "";
             document.getElementById('upload-prompt').classList.remove('hidden');
             document.getElementById('upload-preview-container').classList.add('hidden');
@@ -540,30 +485,20 @@
                 item.classList.remove('bg-gradient-to-tr', 'from-blue-500', 'to-indigo-500', 'text-white');
                 item.classList.add('bg-white', 'text-gray-700');
             });
-            const activeDockItem = document.getElementById(`dock-item-${viewId}`);
-            if(activeDockItem) {
-                activeDockItem.classList.remove('bg-white', 'text-gray-700');
-                activeDockItem.classList.add('bg-gradient-to-tr', 'from-blue-500', 'to-indigo-500', 'text-white');
+            const activeDock = document.getElementById(`dock-item-${viewId}`);
+            if(activeDock) {
+                activeDock.classList.remove('bg-white', 'text-gray-700');
+                activeDock.classList.add('bg-gradient-to-tr', 'from-blue-500', 'to-indigo-500', 'text-white');
             }
         };
 
-        function showGalleryLoadingSkeleton() {
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '';
-            for(let i=0; i<4; i++) {
-                grid.innerHTML += `<div class="bg-white rounded-3xl p-4 apple-shadow border border-gray-100 space-y-4">
-                    <div class="shimmer w-full h-44 rounded-2xl"></div><div class="shimmer w-2/3 h-5 rounded"></div><div class="shimmer w-1/2 h-4 rounded"></div></div>`;
-            }
-            document.getElementById('gallery-empty').classList.add('hidden');
-        }
-
-        window.selectCategory = (cat, element) => {
+        window.selectCategory = (cat, el) => {
             activeCategory = cat;
             document.querySelectorAll('.cat-pill').forEach(pill => {
                 pill.classList.remove('bg-gray-900', 'text-white', 'shadow-sm');
-                pill.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-100');
+                pill.classList.add('bg-white', 'text-gray-600');
             });
-            element.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
+            el.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
             window.filterCertificates();
         };
 
@@ -573,50 +508,42 @@
             const grid = document.getElementById('gallery-grid');
             grid.innerHTML = '';
 
-            let displayedItems = certificatesDatabaseCache.filter(item => item.status === 'approved');
+            let items = certificatesDatabaseCache.filter(item => item.status === 'approved');
+            if (activeCategory !== 'all') items = items.filter(item => item.category === activeCategory);
+            if (searchStr) items = items.filter(item => item.title.toLowerCase().includes(searchStr) || item.author.toLowerCase().includes(searchStr));
+            
+            items.sort((a, b) => sortOrder === 'newest' ? b.createdTime - a.createdTime : a.createdTime - b.createdTime);
 
-            if (activeCategory !== 'all') displayedItems = displayedItems.filter(item => item.category === activeCategory);
-            if (searchStr) displayedItems = displayedItems.filter(item => item.title.toLowerCase().includes(searchStr) || item.author.toLowerCase().includes(searchStr));
-
-            if (sortOrder === 'newest') displayedItems.sort((a, b) => b.createdTime - a.createdTime);
-            else displayedItems.sort((a, b) => a.createdTime - b.createdTime);
-
-            if (displayedItems.length === 0) { document.getElementById('gallery-empty').classList.remove('hidden'); return; }
+            if (items.length === 0) { document.getElementById('gallery-empty').classList.remove('hidden'); return; }
             document.getElementById('gallery-empty').classList.add('hidden');
 
-            displayedItems.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-3xl border border-gray-200/50 apple-shadow flex flex-col justify-between cursor-pointer hover:-translate-y-1 transition-transform";
-                card.onclick = () => window.openDetailedModal(item);
-                card.innerHTML = `
-                    <div>
-                        <div class="w-full h-44 rounded-2xl overflow-hidden bg-gray-50 mb-4 flex items-center justify-center relative">
+            items.forEach(item => {
+                grid.innerHTML += `
+                    <div onclick="window.openModal('${item.id}')" class="bg-white p-4 rounded-3xl border border-gray-200 apple-shadow cursor-pointer hover:-translate-y-1 transition-transform">
+                        <div class="w-full h-44 rounded-2xl overflow-hidden bg-gray-50 mb-4 relative">
                             <img src="${item.imageUrl}" class="w-full h-full object-cover">
-                            <span class="absolute top-2 left-2 bg-white/90 text-[10px] font-semibold text-gray-800 px-2 py-0.5 rounded-full border">${item.category}</span>
+                            <span class="absolute top-2 left-2 bg-white/90 text-[10px] font-semibold px-2 py-0.5 rounded-full border">${item.category}</span>
                         </div>
                         <h4 class="font-bold text-gray-900 leading-tight line-clamp-2 mb-1">${item.title}</h4>
-                        <p class="text-xs text-gray-500 font-medium"><i class="fa-solid fa-user-graduate mr-1"></i> ${item.author}</p>
-                    </div>
-                    <div class="pt-3 mt-2 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
-                        <span>${item.subCategory}</span><span>${item.createdTime.toLocaleDateString('th-TH')}</span>
+                        <p class="text-xs text-gray-500"><i class="fa-solid fa-user-graduate mr-1"></i> ${item.author}</p>
                     </div>`;
-                grid.appendChild(card);
             });
         };
 
-        window.openDetailedModal = (item) => {
-            const modal = document.getElementById('detail-modal');
+        window.openModal = (id) => {
+            const item = certificatesDatabaseCache.find(i => i.id === id);
+            if(!item) return;
             document.getElementById('modal-img').src = item.imageUrl;
             document.getElementById('modal-title').innerText = item.title;
             document.getElementById('modal-author').innerText = item.author;
             document.getElementById('modal-tag').innerText = item.category;
             document.getElementById('modal-sub').innerText = item.subCategory;
             document.getElementById('modal-download-link').href = item.imageUrl;
-            modal.classList.remove('hidden');
+            document.getElementById('detail-modal').classList.remove('hidden');
         };
-
         window.closeModal = () => document.getElementById('detail-modal').classList.add('hidden');
 
+        // --- ระบบจัดการของแอดมิน ---
         window.switchAdminTab = (tab) => {
             currentAdminTab = tab;
             document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
@@ -624,65 +551,68 @@
                 btn.classList.add('text-gray-500', 'border-transparent', 'font-medium');
             });
             document.getElementById(`tab-btn-${tab}`).classList.add('text-blue-600', 'border-b-2', 'border-blue-600', 'font-semibold');
-            renderAdminPanelItems();
+            renderAdminPanel();
         };
 
-        function updateAdminBadgesCount() {
-            const p = certificatesDatabaseCache.filter(i => i.status === 'pending').length;
-            const a = certificatesDatabaseCache.filter(i => i.status === 'approved').length;
-            const r = certificatesDatabaseCache.filter(i => i.status === 'rejected').length;
-            document.getElementById('badge-pending-count').innerText = p;
-            document.getElementById('badge-approved-count').innerText = a;
-            document.getElementById('badge-rejected-count').innerText = r;
-            const badge = document.getElementById('dock-admin-badge');
-            if (p > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
+        function updateAdminBadges() {
+            document.getElementById('badge-pending-count').innerText = certificatesDatabaseCache.filter(i => i.status === 'pending').length;
+            document.getElementById('badge-approved-count').innerText = certificatesDatabaseCache.filter(i => i.status === 'approved').length;
+            document.getElementById('badge-rejected-count').innerText = certificatesDatabaseCache.filter(i => i.status === 'rejected').length;
+            if (certificatesDatabaseCache.filter(i => i.status === 'pending').length > 0) document.getElementById('dock-admin-badge').classList.remove('hidden');
+            else document.getElementById('dock-admin-badge').classList.add('hidden');
         }
 
-        function renderAdminPanelItems() {
+        function renderAdminPanel() {
             const container = document.getElementById('admin-list-container');
             container.innerHTML = '';
-            const targetItems = certificatesDatabaseCache.filter(item => item.status === currentAdminTab);
+            const items = certificatesDatabaseCache.filter(i => i.status === currentAdminTab);
 
-            if(targetItems.length === 0) { document.getElementById('admin-empty').classList.remove('hidden'); return; }
+            if(items.length === 0) { document.getElementById('admin-empty').classList.remove('hidden'); return; }
             document.getElementById('admin-empty').classList.add('hidden');
 
-            targetItems.forEach(item => {
-                const row = document.createElement('div');
-                row.className = "bg-white p-5 rounded-3xl border border-gray-200 flex flex-col sm:flex-row gap-4 justify-between";
-                row.innerHTML = `
-                    <div class="flex items-center space-x-4">
-                        <img src="${item.imageUrl}" class="w-16 h-16 rounded-xl object-cover border">
-                        <div>
-                            <h5 class="text-sm font-bold truncate w-48">${item.title}</h5>
-                            <p class="text-xs text-gray-500">${item.author} • ${item.category}</p>
+            items.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl border flex justify-between">
+                        <div class="flex items-center space-x-4">
+                            <img src="${item.imageUrl}" class="w-16 h-16 rounded-xl object-cover border">
+                            <div><h5 class="text-sm font-bold truncate w-48">${item.title}</h5><p class="text-xs text-gray-500">${item.author}</p></div>
                         </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        ${currentAdminTab === 'pending' ? `
-                            <button onclick="window.modifyCertificateStatus('${item.id}', 'approved')" class="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-semibold border">อนุมัติ</button>
-                            <button onclick="window.modifyCertificateStatus('${item.id}', 'rejected')" class="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold border">ปฏิเสธ</button>
-                        ` : ''}
-                        <button onclick="window.deleteCertificateFile('${item.id}', '${item.storagePath || ''}')" class="px-3 py-1 bg-gray-50 text-gray-500 hover:text-red-600 rounded-lg text-xs border"><i class="fa-solid fa-trash"></i></button>
+                        <div class="flex items-center space-x-2">
+                            ${currentAdminTab === 'pending' ? `
+                                <button onclick="window.modifyStatus('${item.id}', 'approved')" class="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-semibold border">อนุมัติ</button>
+                                <button onclick="window.modifyStatus('${item.id}', 'rejected')" class="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold border">ปฏิเสธ</button>
+                            ` : ''}
+                            <button onclick="window.deleteItem('${item.id}', '${item.storagePath || ''}')" class="px-3 py-1 bg-gray-50 text-gray-500 hover:text-red-600 rounded-lg text-xs border"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>`;
-                container.appendChild(row);
             });
         }
 
-        // --- Admin Manager Functions ---
+        window.modifyStatus = async (id, status) => {
+            try { await updateDoc(doc(db, "certificates", id), { status: status }); await fetchDatabase(); } catch(e) { alert("อัปเดตสถานะไม่สำเร็จ"); }
+        };
+
+        window.deleteItem = async (id, path) => {
+            if(!confirm('ยืนยันลบข้อมูลนี้ถาวร?')) return;
+            try {
+                if (path) await deleteObject(ref(storage, path)).catch(()=>console.log("ไม่มีไฟล์ให้ลบ"));
+                await deleteDoc(doc(db, "certificates", id));
+                await fetchDatabase();
+            } catch(e) { alert("ลบข้อมูลไม่สำเร็จ"); }
+        };
+
+        // --- เพิ่ม/ลด แอดมิน ---
         window.toggleAdminManagerModal = () => {
             const modal = document.getElementById('admin-manager-modal');
             modal.classList.toggle('hidden');
-            if(!modal.classList.contains('hidden')) renderAdminsListUI();
+            if(!modal.classList.contains('hidden')) renderAdminsList();
         };
 
-        function renderAdminsListUI() {
+        function renderAdminsList() {
             const list = document.getElementById('admin-emails-list');
             list.innerHTML = '';
             superAdminsList.forEach(email => {
-                list.innerHTML += `<li class="flex justify-between bg-gray-50 px-3 py-2 rounded-xl text-sm">
-                    <span>${email}</span>
-                    ${email !== 'aceaa372@gmail.com' ? `<button onclick="window.removeAdminFromTeam('${email}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>` : ''}
-                </li>`;
+                list.innerHTML += `<li class="flex justify-between bg-gray-50 px-3 py-2 rounded-xl text-sm"><span>${email}</span> ${email !== 'aceaa372@gmail.com' ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>` : ''}</li>`;
             });
         }
 
@@ -690,17 +620,14 @@
             e.preventDefault();
             const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
             if(!superAdminsList.includes(email)) {
-                superAdminsList.push(email);
-                localStorage.setItem('ntun_vault_admins', JSON.stringify(superAdminsList));
+                superAdminsList.push(email); localStorage.setItem('ntun_vault_admins', JSON.stringify(superAdminsList));
             }
-            document.getElementById('new-admin-email').value = '';
-            renderAdminsListUI(); setupApplicationDashboard();
+            document.getElementById('new-admin-email').value = ''; renderAdminsList(); setupDashboard();
         };
 
-        window.removeAdminFromTeam = (email) => {
+        window.removeAdmin = (email) => {
             superAdminsList = superAdminsList.filter(e => e !== email);
-            localStorage.setItem('ntun_vault_admins', JSON.stringify(superAdminsList));
-            renderAdminsListUI(); setupApplicationDashboard();
+            localStorage.setItem('ntun_vault_admins', JSON.stringify(superAdminsList)); renderAdminsList(); setupDashboard();
         };
     </script>
 </body>

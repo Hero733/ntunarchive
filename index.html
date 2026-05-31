@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NTUN Vault - คลังเกียรติบัตรโรงเรียน</title>
     
-    <meta name="google-signin-client_id" content="802485672001-7tuhmifm1ph2mb09hle6r6hf0tahu9gv.apps.googleusercontent.com">
+    <meta name="google-signin-client_id" content="594076056272-ic8smisk2j4kdhd8n4dmpf7vrul0p8hn.apps.googleusercontent.com">
 
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -299,22 +299,21 @@
         </div>
     </div>
 
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-        // Config ของคุณ (ntunspace)
+        // อัปเดต Config เป็น ntunarchive แล้ว!
         const firebaseConfig = {
-            apiKey: "AIzaSyAlaTyhtXf-d6qDSD5AeWR33Hg3VCn55o8",
-            authDomain: "ntunspace.firebaseapp.com",
-            projectId: "ntunspace",
-            storageBucket: "ntunspace.firebasestorage.app",
-            messagingSenderId: "952526844615",
-            appId: "1:952526844615:web:d1f78ba8e3b44c24ee84e2",
-            measurementId: "G-33DZ6EX79H"
+            apiKey: "AIzaSyCWlvcyFx7X90MQvkuFTqS9Dq-ylyKb8ok",
+            authDomain: "ntunarchive.firebaseapp.com",
+            projectId: "ntunarchive",
+            storageBucket: "ntunarchive.firebasestorage.app",
+            messagingSenderId: "594076056272",
+            appId: "1:594076056272:web:b1e02dd8932b3cb4f23cd5",
+            measurementId: "G-LJJME2SNKF"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -329,13 +328,11 @@
         let currentAdminState = 'pending';
         let uploadedFile = null;
 
-        // รายการแอดมินเริ่มต้น (ดึง/บันทึก ลง LocalStorage ชั่วคราว ถ้าจะให้ดีสุดต้องเก็บใน Firestore ด้วย)
         let adminEmails = ['aceaa372@gmail.com'];
         if(localStorage.getItem('ntun_admins')) {
             try { adminEmails = JSON.parse(localStorage.getItem('ntun_admins')); } catch(e){}
         }
 
-        // หมวดย่อยแบบเจาะจง
         const subCatData = {
             "วิทยาศาสตร์": ["ฟิสิกส์", "เคมี", "ชีววิทยา", "ดาราศาสตร์", "โครงงานวิทยาศาสตร์", "อื่นๆ"],
             "คณิตศาสตร์": ["โอลิมปิกวิชาการ", "คิดเลขเร็ว", "แก้ปัญหาคณิต", "อื่นๆ"],
@@ -396,7 +393,7 @@
                 document.getElementById('dock-admin').classList.remove('hidden');
             }
 
-            fetchData(); // ดึงข้อมูลเริ่มแอป
+            fetchData(); 
         }
 
         // --- FETCH DATA ---
@@ -542,7 +539,7 @@
                 const url = await getDownloadURL(storageRef);
 
                 await addDoc(collection(db, "certificates"), {
-                    status: "pending", // รอตรวจ
+                    status: "pending", 
                     name: document.getElementById('f-name').value.trim(),
                     mainCat: document.getElementById('f-maincat').value,
                     subCat: document.getElementById('f-subcat').value,
@@ -585,7 +582,6 @@
         };
 
         window.renderAdmin = () => {
-            // อัปเดตตัวเลข
             const p = dbCache.filter(i=>i.status==='pending').length;
             const a = dbCache.filter(i=>i.status==='approved').length;
             const r = dbCache.filter(i=>i.status==='rejected').length;
